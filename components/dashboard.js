@@ -67,7 +67,7 @@
     const list=filteredStudents();
     const sorted=[...list].sort((a,b)=>totalScore(b)-totalScore(a));
     const topMarks=sorted[0];
-    const topAttendance=list.find(s=>(safeAttendance()[s.id]||'Present')==='Present')||list[0];
+    const topAttendance=list.find(s=>(safeAttendance()[s.id]||'Unmarked')==='Present')||list[0];
     const cards=[
       {label:'Best in Marks',s:topMarks,score:topMarks?totalScore(topMarks)+'%':'—',meta:topMarks?topMarks.className:'No records',foot:'Highest saved score'},
       {label:'Best in Attendance',s:topAttendance,score:topAttendance?'Present today':'—',meta:topAttendance?topAttendance.className:'No records',foot:'Historical attendance trend unavailable'},
@@ -94,7 +94,7 @@
   }
   function renderRecentAttendance(){
     const list=safeStudents().slice(0,4);
-    return '<div class="card"><div class="dashboard-section-head"><div><h2>Recent attendance</h2><p>Quick view of today’s register</p></div><button class="dashboard-link" onclick="showView(\'attendance\')">Full register ↗</button></div><div class="table-wrap"><table><thead><tr><th>STUDENT</th><th>CLASS</th><th>STATUS</th></tr></thead><tbody>'+list.map(s=>'<tr><td><div class="person"><div class="mini-avatar">'+initialsText(s.name)+'</div><div><b>'+escText(s.name)+'</b><small>'+escText(s.id)+'</small></div></div></td><td>'+escText(s.className)+'</td><td>'+((safeAttendance()[s.id]||'Present')==='Absent'?'<span class="status absent">Absent</span>':(safeAttendance()[s.id]||'Present')==='Late'?'<span class="status late">Late</span>':'<span class="status present">Present</span>')+'</td></tr>').join('')+'</tbody></table></div></div>';
+    return '<div class="card"><div class="dashboard-section-head"><div><h2>Recent attendance</h2><p>Quick view of today’s register</p></div><button class="dashboard-link" onclick="showView(\'attendance\')">Full register ↗</button></div><div class="table-wrap"><table><thead><tr><th>STUDENT</th><th>CLASS</th><th>STATUS</th></tr></thead><tbody>'+list.map(s=>'<tr><td><div class="person"><div class="mini-avatar">'+initialsText(s.name)+'</div><div><b>'+escText(s.name)+'</b><small>'+escText(s.id)+'</small></div></div></td><td>'+escText(s.className)+'</td><td>'+((safeAttendance()[s.id]||'Unmarked')==='Absent'?'<span class="status absent">Absent</span>':(safeAttendance()[s.id]||'Unmarked')==='Late'?'<span class="status late">Late</span>':'<span class="status present">Present</span>')+'</td></tr>').join('')+'</tbody></table></div></div>';
   }
   function renderQuickActions(){
     return '<div class="card"><div class="dashboard-section-head"><div><h2>Quick actions</h2><p>Common tasks in one click</p></div></div><div class="task-list"><div class="task" onclick="showView(\'teacher\')" style="cursor:pointer"><div class="task-icon">✦</div><div><b>Draft a lesson note</b><small>Prepare an editable teaching draft</small></div><span class="arrow">↗</span></div><div class="task" onclick="showView(\'results\')" style="cursor:pointer"><div class="task-icon" style="background:var(--amber-soft);color:var(--color-a66e0d)">▤</div><div><b>Enter assessment scores</b><small>Update totals and grade bands</small></div><span class="arrow">↗</span></div><div class="task" onclick="showView(\'students\')" style="cursor:pointer"><div class="task-icon" style="background:var(--purple-soft);color:var(--purple)">♙</div><div><b>Manage student records</b><small>Search, add and export records</small></div><span class="arrow">↗</span></div></div></div>';

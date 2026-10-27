@@ -49,7 +49,7 @@
     let grid='<g stroke="var(--line)" stroke-width="1">'+[0,25,50,75,100].map(v=>'<line x1="'+left+'" y1="'+(base-v*plotH/100)+'" x2="'+(width-right)+'" y2="'+(base-v*plotH/100)+'"/>').join('')+'</g>';
     let labels='<g fill="var(--muted)" font-size="9">'+[0,25,50,75,100].map(v=>'<text x="3" y="'+(base-v*plotH/100+3)+'">'+v+'</text>').join('')+'</g>';
     let bars='', xlabels='', legend='', groupW=plotW/Math.max(groups.length,1), bw=Math.min(16,groupW/7);
-    const shades=['#c7c2f1','#9389df','#5b50b7'];
+    const shades=['var(--lavender-200)','var(--purple)','var(--indigo-700)'];
     groups.forEach((cl,gi)=>{
       const baseX=left+gi*groupW+groupW*.17;
       series.forEach((ser,si)=>{
@@ -67,7 +67,7 @@
     // Dashboard reflects the existing school-level figures while the editable register remains limited to sample records.
     const present=rawP+Math.max(0,213-rawP), late=rawL+Math.max(0,14-rawL), absent=rawA+Math.max(0,21-rawA), total=present+late+absent;
     const pPct=total?present/total*100:0, lPct=total?late/total*100:0;
-    return '<div class="card"><div class="dashboard-section-head"><div><h2>Attendance breakdown</h2><p>Present, late and absent · school overview</p></div><button class="dashboard-link" onclick="showView(\'attendance\')">Open register ↗</button></div><div class="attendance-summary-layout"><div class="attendance-donut" style="background:conic-gradient(var(--indigo-600) 0 '+pPct+'%,var(--purple) '+pPct+'% '+(pPct+lPct)+'%,#e8e5f5 '+(pPct+lPct)+'% 100%)"><div class="attendance-donut-center"><strong>'+Math.round(pPct)+'%</strong><span>Present</span></div></div><div class="attendance-legend"><div class="attendance-legend-row"><span><i style="background:var(--indigo-600)"></i>Present</span><b>'+present+'</b></div><div class="attendance-legend-row"><span><i style="background:var(--purple)"></i>Late</span><b>'+late+'</b></div><div class="attendance-legend-row"><span><i style="background:#e8e5f5"></i>Absent</span><b>'+absent+'</b></div><div class="attendance-legend-row"><span>Total students</span><b>'+total+'</b></div></div></div></div>';
+    return '<div class="card"><div class="dashboard-section-head"><div><h2>Attendance breakdown</h2><p>Present, late and absent · school overview</p></div><button class="dashboard-link" onclick="showView(\'attendance\')">Open register ↗</button></div><div class="attendance-summary-layout"><div class="attendance-donut" style="background:conic-gradient(var(--indigo-600) 0 '+pPct+'%,var(--purple) '+pPct+'% '+(pPct+lPct)+'%,#e8e5f5 '+(pPct+lPct)+'% 100%)"><div class="attendance-donut-center"><strong>'+Math.round(pPct)+'%</strong><span>Present</span></div></div><div class="attendance-legend"><div class="attendance-legend-row"><span><i style="background:var(--indigo-600)"></i>Present</span><b>'+present+'</b></div><div class="attendance-legend-row"><span><i style="background:var(--purple)"></i>Late</span><b>'+late+'</b></div><div class="attendance-legend-row"><span><i style="background:var(--lavender-100)"></i>Absent</span><b>'+absent+'</b></div><div class="attendance-legend-row"><span>Total students</span><b>'+total+'</b></div></div></div></div>';
   }
   function renderSpotlightCards(){
     const list=filteredStudents();

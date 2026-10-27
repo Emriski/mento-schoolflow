@@ -43,7 +43,9 @@ The portal currently includes:
 - Database-backed attendance submission that leadership can review across devices
 - Role-aware class selection, backed by Supabase row-level security
 
-Deployment and testing status: portal code is committed, and the database schema / function permissions have been updated. The Vercel deployment has not been verified from this session, and a full end-to-end test with separate administrator and teacher accounts is still required. Configure Supabase Auth email confirmation and recovery settings before production use. Do not enter real student records until access policies and account flows have been tested.
+Security and data integrity work: privileged functions are no longer executable by the unauthenticated `anon` role; school setup blocks accounts with a pending staff invitation; class/student/attendance policies now validate school and class relationships; and unique database constraints prevent duplicate daily class registers and duplicate student records within a register. Supabase's advisor still reports that the intentionally authenticated, role-checked `SECURITY DEFINER` functions are callable by signed-in users; review these functions before production.
+
+Deployment and testing status: portal code is committed, and database policies were verified by querying the live schema. The Vercel deployment could not be verified from this session, and a full end-to-end test with separate administrator and teacher accounts is still required. Configure Supabase Auth email confirmation and recovery settings before production use. Do not enter real student records until access policies and account flows have been tested.
 
 ## Existing features preserved
 

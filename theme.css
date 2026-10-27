@@ -1,0 +1,42 @@
+/* Mento SchoolFlow design tokens. Edit this file to change the global look. */
+:root{
+  color-scheme: light;
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --indigo-950:#211b55;
+  --indigo-900:#292267;
+  --indigo-800:#393184;
+  --indigo-700:#4b43a1;
+  --indigo-600:#6559c9;
+  --indigo-100:#e9e6ff;
+  --lavender-50:#f7f6ff;
+  --lavender-100:#efedff;
+  --lavender-200:#e4e0fb;
+  --ink:#28264b;
+  --muted:#85839f;
+  --line:#e9e7f4;
+  --surface:#ffffff;
+  --page-bg:#f1effb;
+  --teal:#39b8ad;
+  --teal-soft:#e1f7f3;
+  --amber:#e6a22a;
+  --amber-soft:#fff3d7;
+  --red:#dc6879;
+  --red-soft:#ffeaee;
+  --blue:#7b8ee8;
+  --blue-soft:#edf0ff;
+  --purple:#9a83df;
+  --purple-soft:#f1edff;
+  --shadow-sm:0 4px 14px rgba(42,34,105,.055);
+  --shadow-md:0 12px 30px rgba(42,34,105,.08);
+  --radius-sm:10px;
+  --radius-md:16px;
+  --radius-lg:22px;
+  --radius-pill:999px;
+  --space-1:4px;
+  --space-2:8px;
+  --space-3:12px;
+  --space-4:16px;
+  --space-5:20px;
+  --space-6:24px;
+}

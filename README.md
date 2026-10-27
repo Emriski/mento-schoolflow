@@ -31,6 +31,20 @@ All Overview sections are kept as separate render functions in [components/dashb
 
 To make a global visual adjustment, edit a token in `theme.css`. To move or resize a dashboard section, adjust the component markup in `components/dashboard.js` and its class rules in `styles.css`.
 
+## Supabase staff portal (early implementation)
+
+Open [portal.html](portal.html) to use the separate staff portal backed by the `schoolflow-production` Supabase project. The main `index.html` dashboard remains the fictional-data prototype and should not be used for real records.
+
+The portal currently includes:
+- Email/password sign-in and first-school administrator setup
+- Staff invitation acceptance for teacher and headteacher roles
+- Class creation, optional teacher assignment and student creation
+- Date-specific attendance sessions and Present / Late / Absent marking
+- Database-backed attendance submission that leadership can review across devices
+- Role-aware class selection, backed by Supabase row-level security
+
+Deployment and testing status: portal code is committed, and the database schema / function permissions have been updated. The Vercel deployment has not been verified from this session, and a full end-to-end test with separate administrator and teacher accounts is still required. Configure Supabase Auth email confirmation and recovery settings before production use. Do not enter real student records until access policies and account flows have been tested.
+
 ## Existing features preserved
 
 - Student directory with search, class filtering, add-student workflow and CSV export

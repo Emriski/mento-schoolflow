@@ -23,7 +23,7 @@
     return '<svg class="kpi-trend" viewBox="0 0 180 24" preserveAspectRatio="none" aria-hidden="true"><path d="M0 22 '+points+' L180 22 L0 22Z" fill="'+color+'" opacity=".10"></path><polyline points="'+points+'" fill="none" stroke="'+color+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline></svg>';
   }
   function renderKpiCards(){
-    const list=filteredStudents(), avgScore=avg(list);
+    const list=filteredStudents();
     const vals=Object.values(safeAttendance());
     const present=vals.filter(v=>v==='Present').length, late=vals.filter(v=>v==='Late').length, absent=vals.filter(v=>v==='Absent').length;
     const total=Math.max(248,present+late+absent);
@@ -36,7 +36,7 @@
     return '<div class="grid dashboard-stats">'+
       '<article class="card dashboard-kpi"><div class="kpi-top">Total students <span class="kpi-icon">♙</span></div><div class="kpi-value">248</div><div class="kpi-note">12 sample records available</div>'+renderTrend('var(--indigo-600)','0,18 25,14 48,17 70,8 95,12 122,4 150,8 180,2')+'</article>'+
       '<article class="card dashboard-kpi"><div class="kpi-top">Present today <span class="kpi-icon">✓</span></div><div class="kpi-value">'+displayPresent+'</div><div class="kpi-note">'+displayTotal+' students accounted for</div>'+renderTrend('var(--teal)','0,19 22,15 45,17 68,10 92,12 118,7 144,9 180,3')+'</article>'+
-      '<article class="card dashboard-kpi"><div class="kpi-top">Class average <span class="kpi-icon">↗</span></div><div class="kpi-value">'+avgScore+'%</div><div class="kpi-note">Based on displayed sample scores</div>'+renderTrend('var(--purple)','0,20 22,17 45,18 68,12 92,13 118,7 144,9 180,4')+'</article>'+
+      '<article class="card dashboard-kpi"><div class="kpi-top">Classes active <span class="kpi-icon">▦</span></div><div class="kpi-value">12</div><div class="kpi-note">Across primary, junior and senior sections</div>'+renderTrend('var(--purple)','0,20 22,17 45,18 68,12 92,13 118,7 144,9 180,4')+'</article>'+
       '<button class="card dashboard-kpi kpi-review" onclick="showView(\'results\')" aria-label="Review pending results"><div class="kpi-top">Results to review <span class="kpi-icon">▤</span></div><div class="kpi-value">'+pending+'</div><div class="kpi-note">Open assessment results →</div>'+renderTrend('var(--amber)','0,20 22,17 45,18 68,11 92,14 118,7 144,10 180,4')+'</button>'+
     '</div>';
   }

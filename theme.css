@@ -69,6 +69,8 @@
   --color-a66e0d:#a66e0d;
   --color-9c6811:#9c6811;
   --color-e8e5f5:#e8e5f5;
+  --color-56d8c6:#56d8c6;
+  --color-8b9aae:#8b9aae;
   /* Compatibility aliases used by the existing Students, Attendance, Results and Settings pages. */
   --navy:var(--indigo-900);
   --navy2:var(--indigo-800);

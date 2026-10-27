@@ -73,7 +73,7 @@
     // Dashboard reflects the existing school-level figures while the editable register remains limited to sample records.
     const present=rawP+Math.max(0,213-rawP), late=rawL+Math.max(0,14-rawL), absent=rawA+Math.max(0,21-rawA), total=present+late+absent;
     const pPct=total?present/total*100:0, lPct=total?late/total*100:0;
-    return '<div class="card"><div class="dashboard-section-head"><div><h2>Attendance breakdown</h2><p>Present, late and absent · school overview</p></div><button class="dashboard-link" onclick="showView(\'attendance\')">Open register ↗</button></div><div class="attendance-summary-layout"><div class="attendance-donut" style="background:conic-gradient(var(--indigo-600) 0 '+pPct+'%,var(--purple) '+pPct+'% '+(pPct+lPct)+'%,#e8e5f5 '+(pPct+lPct)+'% 100%)"><div class="attendance-donut-center"><strong>'+Math.round(pPct)+'%</strong><span>Present</span></div></div><div class="attendance-legend"><div class="attendance-legend-row"><span><i style="background:var(--indigo-600)"></i>Present</span><b>'+present+'</b></div><div class="attendance-legend-row"><span><i style="background:var(--purple)"></i>Late</span><b>'+late+'</b></div><div class="attendance-legend-row"><span><i style="background:var(--lavender-100)"></i>Absent</span><b>'+absent+'</b></div><div class="attendance-legend-row"><span>Total students</span><b>'+total+'</b></div></div></div></div>';
+    return '<div class="card"><div class="dashboard-section-head"><div><h2>Attendance breakdown</h2><p>Present, late and absent · school overview</p></div><button class="dashboard-link" onclick="showView(\'attendance\')">Open register ↗</button></div><div class="attendance-summary-layout"><div class="attendance-donut" style="background:conic-gradient(var(--indigo-600) 0 '+pPct+'%,var(--purple) '+pPct+'% '+(pPct+lPct)+'%,var(--lavender-100) '+(pPct+lPct)+'% 100%)"><div class="attendance-donut-center"><strong>'+Math.round(pPct)+'%</strong><span>Present</span></div></div><div class="attendance-legend"><div class="attendance-legend-row"><span><i style="background:var(--indigo-600)"></i>Present</span><b>'+present+'</b></div><div class="attendance-legend-row"><span><i style="background:var(--purple)"></i>Late</span><b>'+late+'</b></div><div class="attendance-legend-row"><span><i style="background:var(--lavender-100)"></i>Absent</span><b>'+absent+'</b></div><div class="attendance-legend-row"><span>Total students</span><b>'+total+'</b></div></div></div></div>';
   }
   function renderSpotlightCards(){
     const list=filteredStudents();
@@ -109,7 +109,7 @@
     return '<div class="card"><div class="dashboard-section-head"><div><h2>Recent attendance</h2><p>Quick view of today’s register</p></div><button class="dashboard-link" onclick="showView(\'attendance\')">Full register ↗</button></div><div class="table-wrap"><table><thead><tr><th>STUDENT</th><th>CLASS</th><th>STATUS</th></tr></thead><tbody>'+list.map(s=>'<tr><td><div class="person"><div class="mini-avatar">'+initialsText(s.name)+'</div><div><b>'+escText(s.name)+'</b><small>'+escText(s.id)+'</small></div></div></td><td>'+escText(s.className)+'</td><td>'+((safeAttendance()[s.id]||'Present')==='Absent'?'<span class="status absent">Absent</span>':(safeAttendance()[s.id]||'Present')==='Late'?'<span class="status late">Late</span>':'<span class="status present">Present</span>')+'</td></tr>').join('')+'</tbody></table></div></div>';
   }
   function renderQuickActions(){
-    return '<div class="card"><div class="dashboard-section-head"><div><h2>Quick actions</h2><p>Common tasks in one click</p></div></div><div class="task-list"><div class="task" onclick="showView(\'teacher\')" style="cursor:pointer"><div class="task-icon">✦</div><div><b>Draft a lesson note</b><small>Prepare an editable teaching draft</small></div><span class="arrow">↗</span></div><div class="task" onclick="showView(\'results\')" style="cursor:pointer"><div class="task-icon" style="background:var(--amber-soft);color:#a66e0d">▤</div><div><b>Enter assessment scores</b><small>Update totals and grade bands</small></div><span class="arrow">↗</span></div><div class="task" onclick="showView(\'students\')" style="cursor:pointer"><div class="task-icon" style="background:var(--purple-soft);color:var(--purple)">♙</div><div><b>Manage student records</b><small>Search, add and export records</small></div><span class="arrow">↗</span></div></div></div>';
+    return '<div class="card"><div class="dashboard-section-head"><div><h2>Quick actions</h2><p>Common tasks in one click</p></div></div><div class="task-list"><div class="task" onclick="showView(\'teacher\')" style="cursor:pointer"><div class="task-icon">✦</div><div><b>Draft a lesson note</b><small>Prepare an editable teaching draft</small></div><span class="arrow">↗</span></div><div class="task" onclick="showView(\'results\')" style="cursor:pointer"><div class="task-icon" style="background:var(--amber-soft);color:var(--color-a66e0d)">▤</div><div><b>Enter assessment scores</b><small>Update totals and grade bands</small></div><span class="arrow">↗</span></div><div class="task" onclick="showView(\'students\')" style="cursor:pointer"><div class="task-icon" style="background:var(--purple-soft);color:var(--purple)">♙</div><div><b>Manage student records</b><small>Search, add and export records</small></div><span class="arrow">↗</span></div></div></div>';
   }
   window.renderOverview = function(){
     const host=$('overview'); if(!host) return;
@@ -119,7 +119,7 @@
       assessment:$('overviewAssessmentFilter')?.value||'All assessments',
       session:$('overviewSessionFilter')?.value||'2026/2027'
     };
-    host.innerHTML=renderSchoolHeader()+renderDashboardIntro()+renderDashboardFilters()+
+    host.innerHTML=renderDashboardIntro()+renderDashboardFilters()+
       renderKpiCards()+
       '<div class="grid dashboard-two-col">'+renderPerformanceBars()+renderAttendanceDonut()+'</div>'+
       '<div class="dashboard-section-head" style="padding-left:0;padding-right:0"><div><h2>Student spotlights</h2><p>Recognition and progress snapshots</p></div></div>'+renderSpotlightCards()+
@@ -133,6 +133,6 @@
     $('overviewSessionFilter').value=current.session;
     $('overviewDate').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).toUpperCase();
     const schoolName=$('schoolName')?.value;
-    if(schoolName) $('overviewSchoolHeading').textContent=schoolName;
+    if(schoolName && $('schoolHeaderName')) $('schoolHeaderName').textContent=schoolName;
   };
 })();

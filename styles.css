@@ -134,3 +134,14 @@ body{font-family:var(--font-sans);background:var(--page-bg);color:var(--ink)}
 .topbar .school-mark{background:var(--color-e4e0ff);color:var(--indigo-900)}
 .topbar .school-heading{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .topbar .school-user-copy{white-space:nowrap}
+
+
+/* Daily attendance: direct one-tap status choices */
+.attendance-choice{display:flex;align-items:center;gap:5px;flex-wrap:nowrap}
+.attendance-option{appearance:none;border:1px solid var(--line);background:var(--surface,#fff);color:var(--muted);border-radius:8px;padding:8px 10px;font:600 11px/1.1 inherit;cursor:pointer;transition:background .15s,border-color .15s,color .15s;white-space:nowrap}
+.attendance-option:hover{border-color:var(--indigo-500,#8174e8)}
+.attendance-option.present.selected{background:#e7f8ef;border-color:#a6e6c1;color:#167647}
+.attendance-option.late.selected{background:#fff4db;border-color:#f4d18a;color:#9a6200}
+.attendance-option.absent.selected{background:#ffebeb;border-color:#f3b8b8;color:#b42318}
+.attendance-option:focus-visible{outline:2px solid var(--indigo-500,#8174e8);outline-offset:2px}
+@media(max-width:560px){.attendance-choice{gap:3px}.attendance-option{padding:8px 6px;font-size:10px}}

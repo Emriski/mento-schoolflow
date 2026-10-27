@@ -23,12 +23,15 @@
     return '<svg class="kpi-trend" viewBox="0 0 180 24" preserveAspectRatio="none" aria-hidden="true"><path d="M0 22 '+points+' L180 22 L0 22Z" fill="'+color+'" opacity=".10"></path><polyline points="'+points+'" fill="none" stroke="'+color+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline></svg>';
   }
   function renderKpiCards(){
-    const displayPresent=213,displayLate=14,displayAbsent=21,displayTotal=248,pending=18;
+    const source=safeStudents(), statuses=safeAttendance();
+    const present=source.filter(s=>(statuses[s.id]||'Unmarked')==='Present').length;
+    const total=source.length;
+    const classCount=new Set(source.map(s=>s.className)).size;
     return '<div class="grid dashboard-stats">'+
-      '<article class="card dashboard-kpi"><div class="kpi-top">Total students <span class="kpi-icon">♙</span></div><div class="kpi-value">248</div><div class="kpi-note">12 sample records available</div>'+renderTrend('var(--indigo-600)','0,18 25,14 48,17 70,8 95,12 122,4 150,8 180,2')+'</article>'+
-      '<article class="card dashboard-kpi"><div class="kpi-top">Present today <span class="kpi-icon">✓</span></div><div class="kpi-value">'+displayPresent+'</div><div class="kpi-note">'+displayTotal+' students accounted for</div>'+renderTrend('var(--teal)','0,19 22,15 45,17 68,10 92,12 118,7 144,9 180,3')+'</article>'+
-      '<article class="card dashboard-kpi"><div class="kpi-top">Classes active <span class="kpi-icon">▦</span></div><div class="kpi-value">12</div><div class="kpi-note">Across primary, junior and senior sections</div>'+renderTrend('var(--purple)','0,20 22,17 45,18 68,12 92,13 118,7 144,9 180,4')+'</article>'+
-      '<button class="card dashboard-kpi kpi-review" onclick="showView(\'results\')" aria-label="Review pending results"><div class="kpi-top">Results to review <span class="kpi-icon">▤</span></div><div class="kpi-value">'+pending+'</div><div class="kpi-note">Open assessment results →</div>'+renderTrend('var(--amber)','0,20 22,17 45,18 68,11 92,14 118,7 144,10 180,4')+'</button>'+
+      '<article class="card dashboard-kpi"><div class="kpi-top">Sample students <span class="kpi-icon">♙</span></div><div class="kpi-value">'+total+'</div><div class="kpi-note">Fictional records in this browser</div>'+renderTrend('var(--indigo-600)','0,18 25,14 48,17 70,8 95,12 122,4 150,8 180,2')+'</article>'+
+      '<article class="card dashboard-kpi"><div class="kpi-top">Marked present <span class="kpi-icon">✓</span></div><div class="kpi-value">'+present+'</div><div class="kpi-note">From the local demo register only</div>'+renderTrend('var(--teal)','0,19 22,15 45,17 68,10 92,12 118,7 144,9 180,3')+'</article>'+
+      '<article class="card dashboard-kpi"><div class="kpi-top">Sample classes <span class="kpi-icon">▦</span></div><div class="kpi-value">'+classCount+'</div><div class="kpi-note">Classes represented in sample records</div>'+renderTrend('var(--purple)','0,20 22,17 45,18 68,12 92,13 118,7 144,9 180,4')+'</article>'+
+      '<button class="card dashboard-kpi kpi-review" onclick="showView(\'results\')" aria-label="Open sample results"><div class="kpi-top">Assessment drafts <span class="kpi-icon">▤</span></div><div class="kpi-value">'+source.length+'</div><div class="kpi-note">Review fictional sample scores →</div>'+renderTrend('var(--amber)','0,20 22,17 45,18 68,11 92,14 118,7 144,10 180,4')+'</button>'+
     '</div>';
   }
   function renderPerformanceBars(){
@@ -59,9 +62,13 @@
     return '<div class="card"><div class="dashboard-section-head"><div><h2>Exam results by class</h2><p>Grouped comparison · based on saved assessment totals</p></div><span class="pill">'+escText($('overviewAssessmentFilter')?.value||'All assessments')+'</span></div><div class="dashboard-section-body"><svg class="exam-chart" viewBox="0 0 '+width+' 195" role="img" aria-label="Grouped exam result bars by class">'+grid+labels+bars+xlabels+'</svg><div class="chart-legend">'+legend+'</div></div></div>';
   }
   function renderAttendanceDonut(){
-    const present=213,late=14,absent=21,total=present+late+absent;
-    const pPct=present/total*100,lPct=late/total*100;
-    return '<div class="card"><div class="dashboard-section-head"><div><h2>Attendance breakdown</h2><p>Present, late and absent · school overview</p></div><button class="dashboard-link" onclick="showView(\'attendance\')">Open register ↗</button></div><div class="attendance-summary-layout"><div class="attendance-donut" style="background:conic-gradient(var(--indigo-600) 0 '+pPct+'%,var(--purple) '+pPct+'% '+(pPct+lPct)+'%,var(--lavender-100) '+(pPct+lPct)+'% 100%)"><div class="attendance-donut-center"><strong>'+Math.round(pPct)+'%</strong><span>Present</span></div></div><div class="attendance-legend"><div class="attendance-legend-row"><span><i style="background:var(--indigo-600)"></i>Present</span><b>'+present+'</b></div><div class="attendance-legend-row"><span><i style="background:var(--purple)"></i>Late</span><b>'+late+'</b></div><div class="attendance-legend-row"><span><i style="background:var(--lavender-100)"></i>Absent</span><b>'+absent+'</b></div><div class="attendance-legend-row"><span>Total students</span><b>'+total+'</b></div></div></div></div>';
+    const source=safeStudents(), statuses=safeAttendance();
+    const present=source.filter(s=>(statuses[s.id]||'Unmarked')==='Present').length;
+    const late=source.filter(s=>statuses[s.id]==='Late').length;
+    const absent=source.filter(s=>statuses[s.id]==='Absent').length;
+    const total=present+late+absent, pPct=total?present/total*100:0, lPct=total?late/total*100:0;
+    const remaining=Math.max(0,100-pPct-lPct);
+    return '<div class="card"><div class="dashboard-section-head"><div><h2>Attendance breakdown</h2><p>Based only on the fictional local demo register</p></div><button class="dashboard-link" onclick="showView(\'attendance\')">Open register ↗</button></div><div class="attendance-summary-layout"><div class="attendance-donut" style="background:conic-gradient(var(--indigo-600) 0 '+pPct+'%,var(--purple) '+pPct+'% '+(pPct+lPct)+'%,var(--lavender-100) '+(pPct+lPct+remaining)+'% 100%)"><div class="attendance-donut-center"><strong>'+Math.round(pPct)+'%</strong><span>Present</span></div></div><div class="attendance-legend"><div class="attendance-legend-row"><span><i style="background:var(--indigo-600)"></i>Present</span><b>'+present+'</b></div><div class="attendance-legend-row"><span><i style="background:var(--purple)"></i>Late</span><b>'+late+'</b></div><div class="attendance-legend-row"><span><i style="background:var(--lavender-100)"></i>Absent</span><b>'+absent+'</b></div><div class="attendance-legend-row"><span>Marked records</span><b>'+total+'</b></div><div class="attendance-legend-row"><span>Unmarked</span><b>'+Math.max(0,source.length-total)+'</b></div></div></div></div>';
   }
   function renderSpotlightCards(){
     const list=filteredStudents();

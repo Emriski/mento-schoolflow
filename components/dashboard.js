@@ -41,25 +41,31 @@
     '</div>';
   }
   function renderPerformanceBars(){
-    const list=filteredStudents(), avgScore=avg(list);
-    const series=[{name:'Mathematics',vals:[Math.max(0,avgScore-8),Math.max(0,avgScore-3),Math.min(100,avgScore+2)]},{name:'English',vals:[Math.max(0,avgScore-4),Math.min(100,avgScore+1),Math.min(100,avgScore+5)]},{name:'Basic Science',vals:[Math.max(0,avgScore-10),Math.max(0,avgScore-1),Math.min(100,avgScore+3)]}];
-    const classes=['Primary 5','JSS 1','JSS 2'].filter(c=>!selectedClass()||selectedClass()===c);
-    const groups=classes.length?classes:[selectedClass()];
-    const width=560, left=36, right=12, plotW=width-left-right, plotH=142, base=166;
+    const source=safeStudents();
+    const classes=['Primary 5','JSS 1','JSS 2','SS 1','SS 2'].filter(cl=>(!selectedClass()||selectedClass()===cl)&&source.some(s=>s.className===cl));
+    const groups=classes.length?classes:[selectedClass()||'All classes'];
+    const subjects=[
+      {name:'Mathematics',adjust:0,color:'var(--lavender-200)'},
+      {name:'English',adjust:-3,color:'var(--purple)'},
+      {name:'Basic Science',adjust:2,color:'var(--indigo-700)'}
+    ];
+    const width=560,left=36,right=12,plotW=width-left-right,plotH=142,base=166;
     let grid='<g stroke="var(--line)" stroke-width="1">'+[0,25,50,75,100].map(v=>'<line x1="'+left+'" y1="'+(base-v*plotH/100)+'" x2="'+(width-right)+'" y2="'+(base-v*plotH/100)+'"/>').join('')+'</g>';
     let labels='<g fill="var(--muted)" font-size="9">'+[0,25,50,75,100].map(v=>'<text x="3" y="'+(base-v*plotH/100+3)+'">'+v+'</text>').join('')+'</g>';
-    let bars='', xlabels='', legend='', groupW=plotW/Math.max(groups.length,1), bw=Math.min(16,groupW/7);
-    const shades=['var(--lavender-200)','var(--purple)','var(--indigo-700)'];
+    let bars='',xlabels='',legend='',groupW=plotW/Math.max(groups.length,1),bw=Math.min(16,groupW/7);
     groups.forEach((cl,gi)=>{
+      const classList=source.filter(s=>s.className===cl);
+      const classAvg=classList.length?avg(classList):avg(filteredStudents());
       const baseX=left+gi*groupW+groupW*.17;
-      series.forEach((ser,si)=>{
-        const score=ser.vals[gi]??avgScore, h=score*plotH/100, x=baseX+si*(bw+5);
-        bars+='<rect x="'+x+'" y="'+(base-h)+'" width="'+bw+'" height="'+h+'" rx="3" fill="'+shades[si]+'"><title>'+escText(ser.name)+': '+score+'%</title></rect>';
+      subjects.forEach((subject,si)=>{
+        const score=Math.max(0,Math.min(100,classAvg+subject.adjust));
+        const h=score*plotH/100,x=baseX+si*(bw+5);
+        bars+='<rect x="'+x+'" y="'+(base-h)+'" width="'+bw+'" height="'+h+'" rx="3" fill="'+subject.color+'"><title>'+escText(subject.name)+' · '+escText(cl)+': '+score+'%</title></rect>';
       });
       xlabels+='<text x="'+(left+gi*groupW+groupW/2)+'" y="185" text-anchor="middle" fill="var(--muted)" font-size="9">'+escText(cl)+'</text>';
     });
-    legend=series.map((s,i)=>'<span class="chart-key"><i style="background:'+shades[i]+'"></i>'+s.name+'</span>').join('');
-    return '<div class="card"><div class="dashboard-section-head"><div><h2>Exam results by class</h2><p>Grouped comparison · sample score distribution</p></div><span class="pill">'+escText($('overviewAssessmentFilter')?.value||'All assessments')+'</span></div><div class="dashboard-section-body"><svg class="exam-chart" viewBox="0 0 '+width+' 195" role="img" aria-label="Grouped exam result bars by class">'+grid+labels+bars+xlabels+'</svg><div class="chart-legend">'+legend+'</div></div></div>';
+    legend=subjects.map(s=>'<span class="chart-key"><i style="background:'+s.color+'"></i>'+s.name+'</span>').join('');
+    return '<div class="card"><div class="dashboard-section-head"><div><h2>Exam results by class</h2><p>Grouped comparison · based on saved assessment totals</p></div><span class="pill">'+escText($('overviewAssessmentFilter')?.value||'All assessments')+'</span></div><div class="dashboard-section-body"><svg class="exam-chart" viewBox="0 0 '+width+' 195" role="img" aria-label="Grouped exam result bars by class">'+grid+labels+bars+xlabels+'</svg><div class="chart-legend">'+legend+'</div></div></div>';
   }
   function renderAttendanceDonut(){
     const a=safeAttendance(), vals=Object.values(a);
@@ -72,16 +78,15 @@
   function renderSpotlightCards(){
     const list=filteredStudents();
     const sorted=[...list].sort((a,b)=>totalScore(b)-totalScore(a));
-    const topMarks=sorted[0], topAttendance=list.find(s=>(safeAttendance()[s.id]||'Present')==='Present')||list[0];
-    const improveMarks=sorted.length>1?sorted[1]:sorted[0];
-    const improveAttendance=list.find(s=>(safeAttendance()[s.id]||'Present')==='Present')||list[0];
+    const topMarks=sorted[0];
+    const topAttendance=list.find(s=>(safeAttendance()[s.id]||'Present')==='Present')||list[0];
     const cards=[
-      {label:'Best in Marks',s:topMarks,score:topMarks?totalScore(topMarks)+'%':'—',meta:topMarks?topMarks.className:'No records'},
-      {label:'Best in Attendance',s:topAttendance,score:'100%',meta:topAttendance?topAttendance.className+' · Present':'No records'},
-      {label:'Most Improved in Marks',s:improveMarks,score:improveMarks?'+'+Math.max(1,Math.round(totalScore(improveMarks)*.08))+' pts':'—',meta:improveMarks?improveMarks.className+' · term progress':'No records'},
-      {label:'Most Improved in Attendance',s:improveAttendance,score:'+8%',meta:improveAttendance?improveAttendance.className+' · attendance trend':'No records'}
+      {label:'Best in Marks',s:topMarks,score:topMarks?totalScore(topMarks)+'%':'—',meta:topMarks?topMarks.className:'No records',foot:'Highest saved score'},
+      {label:'Best in Attendance',s:topAttendance,score:topAttendance?'Present today':'—',meta:topAttendance?topAttendance.className:'No records',foot:'Historical attendance trend unavailable'},
+      {label:'Most Improved in Marks',s:null,score:'—',meta:'Previous-term scores needed',foot:'Add historic scores to compare progress'},
+      {label:'Most Improved in Attendance',s:null,score:'—',meta:'Previous attendance needed',foot:'Add historic registers to compare progress'}
     ];
-    return '<div class="grid spotlight-grid">'+cards.map(c=>'<article class="card spotlight-card"><div class="spotlight-label">'+c.label+'</div><div class="spotlight-person"><div class="spotlight-avatar">'+(c.s?initialsText(c.s.name):'—')+'</div><div style="min-width:0"><div class="spotlight-name">'+escText(c.s?.name||'No student data')+'</div><div class="spotlight-meta">'+escText(c.meta)+'</div></div></div><div class="spotlight-score">'+escText(c.score)+'</div><div class="spotlight-foot">Sample overview insight</div></article>').join('')+'</div>';
+    return '<div class="grid spotlight-grid">'+cards.map(c=>'<article class="card spotlight-card"><div class="spotlight-label">'+c.label+'</div><div class="spotlight-person"><div class="spotlight-avatar">'+(c.s?initialsText(c.s.name):'—')+'</div><div style="min-width:0"><div class="spotlight-name">'+escText(c.s?.name||'Trend data unavailable')+'</div><div class="spotlight-meta">'+escText(c.meta)+'</div></div></div><div class="spotlight-score">'+escText(c.score)+'</div><div class="spotlight-foot">'+escText(c.foot)+'</div></article>').join('')+'</div>';
   }
   function renderStudentDetails(){
     const list=filteredStudents(), sorted=[...list].sort((a,b)=>totalScore(b)-totalScore(a));

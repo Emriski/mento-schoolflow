@@ -12,7 +12,7 @@ All Overview sections are kept as separate render functions in [components/dashb
 
 - `renderDashboardIntro()` — dashboard title, date and primary actions
 - `renderDashboardFilters()` — class, term, assessment and session filters
-- `renderKpiCards()` — student, attendance, average and review KPIs with trend strips
+- `renderKpiCards()` — student, attendance, class and review KPIs with trend strips
 - `renderPerformanceBars()` — grouped exam-result chart, using a single-color family
 - `renderAttendanceDonut()` — consistent school-level present/late/absent totals
 - `renderSpotlightCards()` — Best in Marks, Best in Attendance and two improvement spotlights

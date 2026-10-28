@@ -83,14 +83,6 @@ function interpretVoiceAttendance(raw){
    namesBeforeStatus='';
   }else namesBeforeStatus+=' '+part;
  }
- // Direct name-and-status commands are also supported.
- list.forEach(s=>{
-  const name=normalizeVoiceText(s.full_name).trim();
-  if(!name||!text.includes(' '+name+' '))return;
-  const at=text.indexOf(' '+name+' '),nearby=text.slice(Math.max(0,at-18),Math.min(text.length,at+name.length+50));
-  const found=statusWords.filter(v=>new RegExp('\\b'+v+'\\b').test(nearby));
-  if(found.length)draft[s.id]=found[found.length-1];
- });
  const matched=Object.keys(draft).length;
  if(!matched)throw new Error('I could not match a student or clear status. Try “Mark everyone present except [full name] absent and [full name] late.”');
  const listLines=list.filter(s=>Object.prototype.hasOwnProperty.call(draft,s.id)).map(s=>s.full_name+': '+draft[s.id]);

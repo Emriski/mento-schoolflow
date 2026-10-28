@@ -61,26 +61,63 @@ function renderRegister(){$('registerList').innerHTML='';const classId=$('regist
 let voiceRecognition=null,voiceDraft=null;
 function activeRegisterStudents(){const classId=$('registerClass').value;return students.filter(s=>s.class_id===classId&&s.active&&(s.admission_status||'admitted')==='admitted')}
 function voiceMessage(text){$('voiceStatus').textContent=text}
+function normalizeVoiceText(value){return ' '+String(value||'').toLowerCase().replace(/[^a-z0-9\s'-]/g,' ').replace(/\s+/g,' ').trim()+' '}
 function interpretVoiceAttendance(raw){
  const list=activeRegisterStudents();if(!list.length)throw new Error('Choose a class with active students first.');
- const text=String(raw||'').toLowerCase().replace(/[’']/g,"'").replace(/[^a-z0-9\s'-]/g,' ').replace(/\s+/g,' ').trim();
- if(!text)throw new Error('Say an attendance instruction first.');
+ const text=normalizeVoiceText(raw).trim();if(!text)throw new Error('Say an attendance instruction first.');
  const draft={};let defaultStatus=null;
  if(/\b(everyone|everybody|all students|all of them|the whole class)\b/.test(text)){
-   if(/\b(absent|away)\b/.test(text)&&! /\b(present)\b/.test(text))defaultStatus='absent';
-   else if(/\b(present)\b/.test(text))defaultStatus='present';
+  if(/\b(absent|away)\b/.test(text)&&!/\bpresent\b/.test(text))defaultStatus='absent';
+  else if(/\bpresent\b/.test(text))defaultStatus='present';
  }
  if(defaultStatus)list.forEach(s=>draft[s.id]=defaultStatus);
  const statusWords=['present','late','absent'];
- const exceptionIndex=text.search(/\b(except|excluding|but not)\b/);
- const targetText=exceptionIndex>=0?text.slice(exceptionIndex+(/\b(except|excluding|but not)\b/.exec(text)?.[0].length||0)):text;
- const parts=targetText.split(/\b(present|late|absent)\b/g);
- let unassigned='';
- for(let i=0;i<parts.length;i++){
-   const part=parts[i].trim();
-   if(statusWords.includes(part)){
-     const status=part;
-     const names=list.filter(s=>{const n=s.full_name.toLowerCase().replace(/[^a-z0-9\s'-]/g,' ').replace(/\s+/g,' ').trim();return n&&new RegExp('(^|[^a-z0-9])'+n.split(' ').map(x=>x.replace(/[.*+?^${}()|[\]\\]/g,'\\$('registerList').addEventListener('click',e=>{const b=e.target.closest('button[data-student]');if(!b)return;marks[b.dataset.student]=b.dataset.status;renderRegister()});')).join('\\s+')+'([^a-z0-9]|$)').test(unassigned)});
+ const exceptionMatch=/\b(except|excluding|but not)\b/.exec(text);
+ const targetText=exceptionMatch?text.slice(exceptionMatch.index+exceptionMatch[0].length):text;
+ const parts=targetText.split(/\b(present|late|absent)\b/g);let namesBeforeStatus='';
+ for(const partRaw of parts){
+  const part=partRaw.trim();
+  if(statusWords.includes(part)){
+   const chunk=normalizeVoiceText(namesBeforeStatus);
+   list.forEach(s=>{const name=normalizeVoiceText(s.full_name).trim();if(name&&chunk.includes(' '+name+' '))draft[s.id]=part});
+   namesBeforeStatus='';
+  }else namesBeforeStatus+=' '+part;
+ }
+ // Direct name-and-status commands are also supported.
+ list.forEach(s=>{
+  const name=normalizeVoiceText(s.full_name).trim();
+  if(!name||!text.includes(' '+name+' '))return;
+  const at=text.indexOf(' '+name+' '),nearby=text.slice(Math.max(0,at-18),Math.min(text.length,at+name.length+50));
+  const found=statusWords.filter(v=>new RegExp('\\b'+v+'\\b').test(nearby));
+  if(found.length)draft[s.id]=found[found.length-1];
+ });
+ const matched=Object.keys(draft).length;
+ if(!matched)throw new Error('I could not match a student or clear status. Try “Mark everyone present except [full name] absent and [full name] late.”');
+ const listLines=list.filter(s=>Object.prototype.hasOwnProperty.call(draft,s.id)).map(s=>s.full_name+': '+draft[s.id]);
+ $('voicePreview').textContent='Review '+matched+' student status(es): '+listLines.join(' · ')+(matched<list.length?' · '+(list.length-matched)+' student(s) not changed':'');
+ return {draft,matched,total:list.length,defaultStatus};
+}
+function showVoicePreview(){
+ try{const result=interpretVoiceAttendance($('voiceTranscript').value);voiceDraft=result.draft;$('applyVoiceAttendance').disabled=false;voiceMessage('Instruction interpreted. Review the preview, then apply it to the register.')}
+ catch(err){voiceDraft=null;$('applyVoiceAttendance').disabled=true;$('voicePreview').textContent=err.message;voiceMessage('Could not interpret that instruction. Try again or use manual marking.')}
+}
+$('previewVoiceAttendance').addEventListener('click',showVoicePreview);
+$('applyVoiceAttendance').addEventListener('click',()=>{if(!voiceDraft)return;Object.entries(voiceDraft).forEach(([id,status])=>marks[id]=status);renderRegister();voiceMessage('Voice statuses applied. Review every student, then submit attendance.');$('applyVoiceAttendance').disabled=true});
+$('startVoiceAttendance').addEventListener('click',()=>{
+ const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SpeechRecognition){voiceMessage('Voice recognition is not available in this browser. Continue with manual marking.');return}
+ if(!$('registerClass').value){voiceMessage('Choose your class before starting voice attendance.');return}
+ try{
+  voiceRecognition=new SpeechRecognition();voiceRecognition.lang='en-NG';voiceRecognition.continuous=false;voiceRecognition.interimResults=true;
+  $('startVoiceAttendance').disabled=true;$('stopVoiceAttendance').disabled=false;$('voiceTranscript').value='';voiceDraft=null;$('applyVoiceAttendance').disabled=true;voiceMessage('Listening… speak your instruction clearly.');
+  voiceRecognition.onresult=e=>{let transcript='';for(let i=0;i<e.results.length;i++)transcript+=e.results[i][0].transcript+' ';$('voiceTranscript').value=transcript.trim();if(e.results[e.results.length-1].isFinal)showVoicePreview()};
+  voiceRecognition.onerror=e=>voiceMessage('Voice recognition issue: '+(e.error||'please try again')+'. You can continue with manual marking.');
+  voiceRecognition.onend=()=>{$('startVoiceAttendance').disabled=false;$('stopVoiceAttendance').disabled=true;if($('voiceTranscript').value.trim())showVoicePreview()};
+  voiceRecognition.start();
+ }catch(err){$('startVoiceAttendance').disabled=false;$('stopVoiceAttendance').disabled=true;voiceMessage('Could not start the microphone. Check browser microphone permission and try again.')}
+});
+$('stopVoiceAttendance').addEventListener('click',()=>{if(voiceRecognition)voiceRecognition.stop()});
+$('registerList').addEventListener('click',e=>{const b=e.target.closest('button[data-student]');if(!b)return;marks[b.dataset.student]=b.dataset.status;renderRegister()});')).join('\\s+')+'([^a-z0-9]|$)').test(unassigned)});
      names.forEach(s=>draft[s.id]=status);
      unassigned='';
    }else unassigned+=' '+part;

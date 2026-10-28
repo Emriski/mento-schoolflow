@@ -109,62 +109,6 @@ $('startVoiceAttendance').addEventListener('click',()=>{
  }catch(err){$('startVoiceAttendance').disabled=false;$('stopVoiceAttendance').disabled=true;voiceMessage('Could not start the microphone. Check browser microphone permission and try again.')}
 });
 $('stopVoiceAttendance').addEventListener('click',()=>{if(voiceRecognition)voiceRecognition.stop()});
-$('registerList').addEventListener('click',e=>{const b=e.target.closest('button[data-student]');if(!b)return;marks[b.dataset.student]=b.dataset.status;renderRegister()});')).join('\\s+')+'([^a-z0-9]|$)').test(unassigned)});
-     names.forEach(s=>draft[s.id]=status);
-     unassigned='';
-   }else unassigned+=' '+part;
- }
- // Also recognize direct “Daniel Okon is late” / “mark Grace absent” commands.
- list.forEach(s=>{
-   const n=s.full_name.toLowerCase().replace(/[^a-z0-9\s'-]/g,' ').replace(/\s+/g,' ').trim();
-   const escaped=n.split(' ').map(x=>x.replace(/[.*+?^${}()|[\]\\]/g,'\\$('registerList').addEventListener('click',e=>{const b=e.target.closest('button[data-student]');if(!b)return;marks[b.dataset.student]=b.dataset.status;renderRegister()});')).join('\\s+');
-   const re=new RegExp('(^|[^a-z0-9])'+escaped+'([^a-z0-9]|$)','g');let m;
-   while((m=re.exec(text))!==null){
-     const nearby=text.slice(Math.max(0,m.index-18),Math.min(text.length,m.index+m[0].length+48));
-     const statuses=statusWords.filter(v=>new RegExp('\\b'+v+'\\b').test(nearby));
-     if(statuses.length)draft[s.id]=statuses[statuses.length-1];
-   }
- });
- const matched=Object.keys(draft).length;
- if(!matched)throw new Error('I could not match any students or clear statuses. Try “Mark everyone present except [full name] absent and [full name] late.”');
- if(!defaultStatus && matched<list.length){
-   const unmentioned=list.filter(s=>!Object.prototype.hasOwnProperty.call(draft,s.id));
-   $('voicePreview').textContent='Only '+matched+' of '+list.length+' students have a clear status. Unmentioned students will keep their current status; mark everyone present first if that is what you intended.';
- }else $('voicePreview').textContent='';
- return {draft,matched,total:list.length,defaultStatus};
-}
-function showVoicePreview(){
- try{
-  const result=interpretVoiceAttendance($('voiceTranscript').value);
-  voiceDraft=result.draft;
-  const list=activeRegisterStudents();
-  const lines=list.filter(s=>Object.prototype.hasOwnProperty.call(voiceDraft,s.id)).map(s=>s.full_name+': '+voiceDraft[s.id]);
-  $('voicePreview').textContent='Review '+result.matched+' student status(es): '+lines.join(' · ')+(result.matched<result.total?' · '+(result.total-result.matched)+' student(s) not changed':'');
-  $('applyVoiceAttendance').disabled=false;
-  voiceMessage('Instruction interpreted. Check the preview, then apply it to the register.');
- }catch(err){voiceDraft=null;$('applyVoiceAttendance').disabled=true;$('voicePreview').textContent=err.message;voiceMessage('Could not interpret that instruction. Edit the transcript or try again.')}
-}
-$('previewVoiceAttendance').addEventListener('click',showVoicePreview);
-$('applyVoiceAttendance').addEventListener('click',()=>{
- if(!voiceDraft)return;
- Object.entries(voiceDraft).forEach(([id,status])=>marks[id]=status);
- renderRegister();voiceMessage('Voice statuses applied to the register. Review every student, then submit attendance.');$('applyVoiceAttendance').disabled=true;
-});
-$('startVoiceAttendance').addEventListener('click',()=>{
- const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
- if(!SpeechRecognition){voiceMessage('Voice recognition is not available in this browser. Try a supported browser or continue with manual marking.');return}
- if(!$('registerClass').value){voiceMessage('Choose your class before starting voice attendance.');return}
- try{
-  voiceRecognition=new SpeechRecognition();voiceRecognition.lang='en-NG';voiceRecognition.continuous=false;voiceRecognition.interimResults=true;
-  $('startVoiceAttendance').disabled=true;$('stopVoiceAttendance').disabled=false;$('voiceTranscript').value='';voiceDraft=null;$('applyVoiceAttendance').disabled=true;voiceMessage('Listening… speak your instruction clearly.');
-  voiceRecognition.onresult=e=>{let transcript='';for(let i=0;i<e.results.length;i++)transcript+=e.results[i][0].transcript+' ';$('voiceTranscript').value=transcript.trim();if(e.results[e.results.length-1].isFinal)showVoicePreview()};
-  voiceRecognition.onerror=e=>voiceMessage('Voice recognition issue: '+(e.error||'please try again')+'. You can type nothing here; use manual marking if needed.');
-  voiceRecognition.onend=()=>{$('startVoiceAttendance').disabled=false;$('stopVoiceAttendance').disabled=true;if($('voiceTranscript').value.trim())showVoicePreview()};
-  voiceRecognition.start();
- }catch(err){$('startVoiceAttendance').disabled=false;$('stopVoiceAttendance').disabled=true;voiceMessage('Could not start the microphone. Check browser microphone permission and try again.')}
-});
-$('stopVoiceAttendance').addEventListener('click',()=>{if(voiceRecognition)voiceRecognition.stop()});
-
 $('registerList').addEventListener('click',e=>{const b=e.target.closest('button[data-student]');if(!b)return;marks[b.dataset.student]=b.dataset.status;renderRegister()});
 $('registerClass').addEventListener('change',async()=>{marks={};await loadRegister();renderRegister()});
 async function loadRegister(){const classId=$('registerClass').value;if(!classId)return;const date=$('registerDate').value;const {data:session,error}=await db.from('attendance_sessions').select('id').eq('class_id',classId).eq('attendance_date',date).maybeSingle();if(error)throw error;marks={};if(!session)return;const {data,error:e}=await db.from('attendance_records').select('student_id,status').eq('session_id',session.id);if(e)throw e;(data||[]).forEach(r=>marks[r.student_id]=r.status)}

@@ -184,3 +184,18 @@ body{font-family:var(--font-sans);background:var(--page-bg);color:var(--ink)}
   .topbar .topright>a:after{content:"Portal";font-size:10px}
   .topbar .school-heading{font-size:12px}
 }
+
+
+/* Mobile navigation should stay open while the user scrolls through it. */
+@media(max-width:700px){
+  #sidebar.open{
+    overflow-y:auto;
+    overscroll-behavior-y:contain;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-y;
+  }
+  #sidebar .nav,
+  #sidebar .nav button{
+    touch-action:pan-y;
+  }
+}

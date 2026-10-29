@@ -25,11 +25,13 @@
   function renderKpiCards(){
     const source=safeStudents(), statuses=safeAttendance();
     const present=source.filter(s=>(statuses[s.id]||'Unmarked')==='Present').length;
+    const late=source.filter(s=>statuses[s.id]==='Late').length;
+    const absent=source.filter(s=>statuses[s.id]==='Absent').length;
     const total=source.length;
     const classCount=new Set(source.map(s=>s.className)).size;
     return '<div class="grid dashboard-stats">'+
       '<article class="card dashboard-kpi"><div class="kpi-top">Sample students <span class="kpi-icon">♙</span></div><div class="kpi-value">'+total+'</div><div class="kpi-note">Fictional records in this browser</div>'+renderTrend('var(--indigo-600)','0,18 25,14 48,17 70,8 95,12 122,4 150,8 180,2')+'</article>'+
-      '<article class="card dashboard-kpi"><div class="kpi-top">Marked present <span class="kpi-icon">✓</span></div><div class="kpi-value">'+present+'</div><div class="kpi-note">From the local demo register only</div>'+renderTrend('var(--teal)','0,19 22,15 45,17 68,10 92,12 118,7 144,9 180,3')+'</article>'+
+      '<article class="card dashboard-kpi"><div class="kpi-top">Marked present <span class="kpi-icon">✓</span></div><div class="kpi-value">'+present+'</div><div class="kpi-note">'+late+' late · '+absent+' absent</div>'+renderTrend('var(--teal)','0,19 22,15 45,17 68,10 92,12 118,7 144,9 180,3')+'</article>'+
       '<article class="card dashboard-kpi"><div class="kpi-top">Sample classes <span class="kpi-icon">▦</span></div><div class="kpi-value">'+classCount+'</div><div class="kpi-note">Classes represented in sample records</div>'+renderTrend('var(--purple)','0,20 22,17 45,18 68,12 92,13 118,7 144,9 180,4')+'</article>'+
       '<button class="card dashboard-kpi kpi-review" onclick="showView(\'results\')" aria-label="Open sample results"><div class="kpi-top">Assessment drafts <span class="kpi-icon">▤</span></div><div class="kpi-value">'+source.length+'</div><div class="kpi-note">Review fictional sample scores →</div>'+renderTrend('var(--amber)','0,20 22,17 45,18 68,11 92,14 118,7 144,10 180,4')+'</button>'+
     '</div>';

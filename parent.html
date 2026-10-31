@@ -101,7 +101,8 @@ $('cancelConversation').addEventListener('click',()=>{$('newConversation').class
 $('sendChatMessage').addEventListener('click',()=>sendChat());
 $('chatBody').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat()}});
 $('conversationList').addEventListener('click',e=>{const b=e.target.closest('[data-conversation]');if(b)openConversation(b.dataset.conversation).catch(x=>chatStatus(x.message))});
-\nfunction childName(id){return children.find(c=>c.id===id)?.full_name||'Student'}
+
+function childName(id){return children.find(c=>c.id===id)?.full_name||'Student'}
 function render(){
  $('welcome').textContent='Welcome'+(user?.email?'':'')+', parent';$('childCount').textContent=children.length;$('resultCount').textContent=results.length;$('balance').textContent=money(fees.reduce((n,x)=>n+Math.max(0,Number(x.amount_due||0)-Number(x.amount_paid||0)),0));
  $('children').innerHTML=children.length?children.map(c=>'<div class="student"><h3>'+esc(c.full_name)+'</h3><div class="muted">Student ID: '+esc(c.student_code||'Not assigned')+'</div></div>').join(''):'<p>No linked children found.</p>';

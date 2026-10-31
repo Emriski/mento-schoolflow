@@ -15,7 +15,7 @@
 <script type="module">
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const db=createClient('https://rkwcfkkckfitcgvstekr.supabase.co','sb_publishable_eFBNcaDH6ZtRBo2lIRORug_BDmCDFyC');
-const $=id=>document.getElementById(id);let user=null,children=[],results=[],fees=[],attendance=[],schoolId=null,activeConversation=null,chatChannel=null,chatMode='parent_teacher',chatRecipients=[];
+const $=id=>document.getElementById(id);let user=null,children=[],results=[],fees=[],attendance=[],schoolId=null,activeConversation=null,chatChannel=null,chatMode='parent_teacher',chatRecipients=[],pendingChatMessageId=null;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=v=>'₦'+Number(v||0).toLocaleString('en-NG');
 function message(t,type=''){ $('message').textContent=t;$('message').className='message '+type;$('message').classList.remove('hidden');}
@@ -67,7 +67,7 @@ async function createChat(){
  await loadConversations();await openConversation(data);
 }
 async function openConversation(id){
- activeConversation=id;closeChatChannel();
+ activeConversation=id;pendingChatMessageId=null;closeChatChannel();
  const {data:conv,error}=await db.from('school_conversations').select('id,subject,conversation_type').eq('id',id).single();
  if(error)throw error;
  $('chatTitle').textContent=conv.subject;$('chatBody').disabled=false;$('sendChatMessage').disabled=false;
@@ -85,11 +85,11 @@ async function renderChatMessages(){
 async function sendChat(){
  const body=$('chatBody').value.trim();if(!body||!activeConversation)return;
  const b=$('sendChatMessage');b.disabled=true;chatStatus('Sending…');
- const clientId=crypto.randomUUID();
+ if(!pendingChatMessageId)pendingChatMessageId=crypto.randomUUID();
  try{
-  const {error}=await db.from('school_messages').insert({conversation_id:activeConversation,sender_id:user.id,client_message_id:clientId,body});
+  const {error}=await db.from('school_messages').insert({conversation_id:activeConversation,sender_id:user.id,client_message_id:pendingChatMessageId,body});
   if(error)throw error;
-  $('chatBody').value='';chatStatus('Sent');await renderChatMessages();
+  $('chatBody').value='';pendingChatMessageId=null;chatStatus('Sent');await renderChatMessages();
  }catch(e){chatStatus('Message not sent: '+e.message+'. Your text is still here—tap Send to retry.')}
  finally{b.disabled=false}
 }

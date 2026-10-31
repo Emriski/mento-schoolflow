@@ -26,7 +26,7 @@ async function load(){
  const g=await db.from('student_guardians').select('student_id,school_id,guardian_name').eq('guardian_user_id',user.id);
  if(g.error)throw g.error;
  const ids=[...new Set((g.data||[]).map(x=>x.student_id))];schoolId=g.data?.[0]?.school_id||null;
- if(!ids.length){children=[];results=[];fees=[];attendance=[];render();message('No children are linked to this account yet. Please ask the school administrator to link your parent account to your guardian record.','');return}
+ if(!ids.length){children=[];results=[];fees=[];attendance=[];render();message('No children are linked to this account yet. Please ask the school administrator or head teacher to verify and link your parent account to your guardian record.','');return}
  const [s,r,f,a]=await Promise.all([
   db.from('students').select('id,full_name,student_code,class_id,school_id,active').in('id',ids).eq('active',true),
   db.from('student_results').select('id,student_id,academic_year,term,subject,ca_score,ca_max,exam_score,exam_max,total_score,total_max,percentage,grade,remarks,created_at').in('student_id',ids).order('created_at',{ascending:false}),

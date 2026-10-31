@@ -81,6 +81,39 @@
 </section>
 <p class="notice">Privacy: do not use real student records until your school has reviewed permissions, configured account recovery and email delivery, and tested its access controls. Never put a Supabase service-role key in this page.</p>
 </div>
+<script>
+/* Keep the login form from falling back to a full-page native submission if the module fails to load. */
+window.__schoolflowModuleReady = false;
+window.addEventListener('DOMContentLoaded', () => {
+  ['signInForm', 'signUpForm', 'setupForm'].forEach((id) => {
+    const form = document.getElementById(id);
+    if (!form) return;
+    form.addEventListener('submit', (event) => {
+      if (!window.__schoolflowModuleReady) {
+        event.preventDefault();
+        window.setTimeout(() => {
+          if (window.__schoolflowModuleReady) return;
+          const message = document.getElementById('message');
+          if (message) {
+            message.textContent = 'SchoolFlow could not load its sign-in service. Check your internet connection, refresh the page, and try again. If this continues, contact Mento Solutions.';
+            message.className = 'message error';
+            message.classList.remove('hidden');
+          }
+        }, 0);
+      }
+    }, true);
+  });
+});
+window.addEventListener('error', (event) => {
+  if (window.__schoolflowModuleReady) return;
+  const message = document.getElementById('message');
+  if (message) {
+    message.textContent = 'A required SchoolFlow script failed to load. Refresh the page and try again.';
+    message.className = 'message error';
+    message.classList.remove('hidden');
+  }
+});
+</script>
 <script type="module">
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const SUPABASE_URL='https://rkwcfkkckfitcgvstekr.supabase.co';
@@ -389,6 +422,7 @@ $('acceptInviteBtn').addEventListener('click',async()=>{const b=$('acceptInviteB
 $('signOutBtn').addEventListener('click',async()=>{await db.auth.signOut();user=null;profile=null;show('authView');msg('Signed out.','success')});
 async function start(){try{const {data:{session}}=await db.auth.getSession();if(!session){show('authView');return}user=session.user;await loadProfile()}catch(e){show('authView');msg(e.message,'error')}}
 db.auth.onAuthStateChange((_event,session)=>{if(!session){user=null;profile=null;show('authView')}});
+window.__schoolflowModuleReady = true;
 start();
 </script>
 </body></html>

@@ -38,6 +38,7 @@ async function load(){
  const sessionIds=[...new Set(attendance.map(x=>x.session_id).filter(Boolean))];
  if(sessionIds.length){const ss=await db.from('attendance_sessions').select('id,attendance_date,class_id').in('id',sessionIds);if(ss.error)throw ss.error;const map=new Map((ss.data||[]).map(x=>[x.id,x]));attendance=attendance.map(x=>({...x,session:map.get(x.session_id)}));}
  render();
+ await loadConversations();
 }
 
 function chatStatus(t){$('chatStatus').textContent=t||''}

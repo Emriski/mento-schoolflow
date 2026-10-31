@@ -108,7 +108,9 @@ window.addEventListener('error', (event) => {
   if (window.__schoolflowModuleReady) return;
   const message = document.getElementById('message');
   if (message) {
-    message.textContent = 'A required SchoolFlow script failed to load. Refresh the page and try again.';
+    const failedFile = event.filename ? ' File: ' + event.filename : '';
+    const reason = event.message ? ' Details: ' + event.message : '';
+    message.textContent = 'A required SchoolFlow script failed to load.' + failedFile + reason + ' Please share this error with Mento Solutions.';
     message.className = 'message error';
     message.classList.remove('hidden');
   }

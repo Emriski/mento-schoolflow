@@ -54,7 +54,7 @@ async function startNewChat(type){
  $('chatStudent').innerHTML=children.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.full_name)+'</option>').join('');
  $('chatRecipient').innerHTML='<option value="">Loading recipients…</option>';
  const table=type==='parent_teacher'?'teacher':'admin';
- const {data,error}=await db.from('profiles').select('id,full_name,role').eq('school_id',schoolId).eq('role',table).order('full_name');
+ const {data,error}=await db.rpc('schoolflow_parent_message_recipients',{p_role:table});
  if(error)throw error;
  chatRecipients=data||[];
  $('chatRecipient').innerHTML=chatRecipients.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.full_name)+'</option>').join('')||'<option value="">No '+(table==='teacher'?'teachers':'administrators')+' available</option>';

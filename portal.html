@@ -195,38 +195,6 @@ $('staffConversationList').addEventListener('click',e=>{const b=e.target.closest
 $('staffSendMessage').addEventListener('click',sendStaffMessage);
 $('staffChatBody').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendStaffMessage()}});
 
-function staffChatStatus(t){$('staffChatStatus').textContent=t||''}
-async function loadStaffConversations(){
- const {data,error}=await db.from('school_conversations').select('id,subject,conversation_type,updated_at').order('updated_at',{ascending:false});
- if(error)throw error;
- $('staffConversationList').innerHTML=(data||[]).map(x=>'<button type="button" class="secondary" style="display:block;width:100%;margin:6px 0;text-align:left" data-staff-conversation="'+esc(x.id)+'"><strong>'+esc(x.subject)+'</strong><br><small>'+esc(x.conversation_type.replace('_',' '))+'</small></button>').join('')||'<p class="notice">No conversations yet.</p>';
-}
-async function openStaffConversation(id){
- staffActiveConversation=id;if(staffChatChannel){db.removeChannel(staffChatChannel);staffChatChannel=null}
- const {data,error}=await db.from('school_conversations').select('id,subject,conversation_type').eq('id',id).single();if(error)throw error;
- $('staffChatTitle').textContent=data.subject;
- const participant=await db.from('school_conversation_participants').select('user_id').eq('conversation_id',id).eq('user_id',user.id).maybeSingle();
- const canReply=!!participant.data;
- $('staffChatBody').disabled=!canReply;$('staffSendMessage').disabled=!canReply;
- await renderStaffMessages();
- staffChatChannel=db.channel('staff-chat-'+id).on('postgres_changes',{event:'INSERT',schema:'public',table:'school_messages',filter:'conversation_id=eq.'+id},()=>renderStaffMessages().catch(e=>staffChatStatus(e.message))).subscribe();
-}
-async function renderStaffMessages(){
- const {data,error}=await db.from('school_messages').select('id,sender_id,body,created_at').eq('conversation_id',staffActiveConversation).order('created_at',{ascending:true}).limit(300);if(error)throw error;
- $('staffChatMessages').innerHTML=(data||[]).map(x=>'<div style="padding:10px;margin:7px 0;border-radius:10px;background:'+(x.sender_id===user.id?'#efedff':'#f7f7fb')+'"><div>'+esc(x.body).replace(/\n/g,'<br>')+'</div><small>'+esc(new Date(x.created_at).toLocaleString())+'</small></div>').join('')||'<p class="muted">No messages yet.</p>';
- $('staffChatMessages').scrollTop=$('staffChatMessages').scrollHeight;
-}
-async function sendStaffMessage(){
- const body=$('staffChatBody').value.trim();if(!body||!staffActiveConversation)return;
- $('staffSendMessage').disabled=true;staffChatStatus('Sending…');
- try{const {error}=await db.from('school_messages').insert({conversation_id:staffActiveConversation,sender_id:user.id,client_message_id:crypto.randomUUID(),body});if(error)throw error;$('staffChatBody').value='';staffChatStatus('Sent');await renderStaffMessages()}
- catch(e){staffChatStatus('Message not sent: '+e.message+'. Your text is still here—retry when ready.')}
- finally{$('staffSendMessage').disabled=false}
-}
-$('staffConversationList').addEventListener('click',e=>{const b=e.target.closest('[data-staff-conversation]');if(b)openStaffConversation(b.dataset.staffConversation).catch(x=>staffChatStatus(x.message))});
-$('staffSendMessage').addEventListener('click',sendStaffMessage);
-$('staffChatBody').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendStaffMessage()}});
-
 async function loadProfile(){msg('Credentials accepted. Loading your staff profile…');const {data,error}=await db.from('profiles').select('id,school_id,full_name,role').eq('id',user.id).maybeSingle();if(error)throw new Error('Profile lookup failed: '+error.message);profile=data;if(!profile){show('setupView');$('setupFullName').value=user.user_metadata?.full_name||'';clearMsg();return}await loadWorkspace()}
 async function workspaceStep(label,task){msg('Signed in. '+label+'…');try{return await task()}catch(error){throw new Error(label+' failed: '+(error?.message||String(error)))}}
 async function loadWorkspace(){show('appView');$('welcomeTitle').textContent=profile.full_name;const {data:school,error:schoolError}=await workspaceStep('Loading school details',()=>db.from('schools').select('name').eq('id',profile.school_id).maybeSingle());if(schoolError)throw new Error('School details failed: '+schoolError.message);$('welcomeSub').textContent=(school?.name||'School workspace')+' · '+profile.role.replace('_',' ');$('roleBadge').textContent=profile.role.replace('_',' ');document.querySelector('[data-tab="admissions"]').classList.toggle('hidden',!['admin','head_teacher'].includes(profile.role));document.querySelector('[data-tab="intake"]').classList.toggle('hidden',profile.role!=='teacher');document.querySelector('[data-tab="fees"]').classList.toggle('hidden',profile.role!=='admin');document.querySelector('[data-tab="parents"]').classList.toggle('hidden',!['admin','head_teacher'].includes(profile.role));$('classCreateArea').classList.toggle('hidden',!['admin','head_teacher'].includes(profile.role));$('studentForm').classList.toggle('hidden',profile.role!=='admin');$('inviteForm').classList.toggle('hidden',!['admin','head_teacher'].includes(profile.role));$('inviteRole').querySelector('option[value="admin"]').disabled=profile.role!=='admin';$('admissionForm').classList.toggle('hidden',profile.role!=='admin');$('admissionDate').value=today();await workspaceStep('Loading staff',loadStaff);await workspaceStep('Loading classes',loadClasses);await workspaceStep('Loading students',loadStudents);await workspaceStep('Loading attendance',loadRegister);await workspaceStep('Loading admissions',loadAdmissions);renderRegister();renderClasses();renderStaff();renderIntake();if(profile.role==='admin')await workspaceStep('Loading fee records',loadFeeRecords);msg('You are signed in. Your school workspace is ready.','success')}

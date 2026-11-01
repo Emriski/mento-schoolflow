@@ -12,7 +12,7 @@
 <body>
 <div class="shell">
 <header class="top"><div class="brand"><div class="logo">S</div><div><strong>SchoolFlow Staff Portal</strong><small>by Mento Solutions</small></div></div><button id="signOutBtn" class="secondary hidden" type="button">Sign out</button></header>
-<div id="message" class="message hidden" role="status"></div>
+<div id="message" class="message hidden" role="status"></div><button id="retryWorkspaceBtn" class="secondary hidden" type="button" style="margin:0 0 16px">Retry loading workspace</button>
 <section id="authView" class="grid">
 <div class="panel"><h1>Welcome back.</h1><p class="muted">Sign in to access your school's workspace.</p>
 <form id="signInForm"><div class="field"><label for="loginEmail">Email address</label><input id="loginEmail" type="email" autocomplete="email" required></div><div class="field"><label for="loginPassword">Password</label><input id="loginPassword" type="password" autocomplete="current-password" required minlength="8"></div><button type="submit">Sign in</button></form></div>
@@ -105,16 +105,16 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 });
 window.addEventListener('error', (event) => {
-  if (window.__schoolflowModuleReady) return;
+  // Resource-load errors do not bubble. Only handle a failed module script;
+  // unrelated images, stylesheets and runtime errors must not be reported as auth failures.
+  if (window.__schoolflowModuleReady || event.target?.tagName !== 'SCRIPT' || event.target?.type !== 'module') return;
   const message = document.getElementById('message');
   if (message) {
-    const failedFile = event.filename ? ' File: ' + event.filename : '';
-    const reason = event.message ? ' Details: ' + event.message : '';
-    message.textContent = 'A required SchoolFlow script failed to load.' + failedFile + reason + ' Please share this error with Mento Solutions.';
+    message.textContent = 'The SchoolFlow sign-in service could not be loaded. Check your internet connection, refresh the page, and try again. If the problem continues, contact Mento Solutions.';
     message.className = 'message error';
     message.classList.remove('hidden');
   }
-});
+}, true);
 </script>
 <script type="module">
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -126,6 +126,8 @@ let user=null,profile=null,classes=[],students=[],staff=[],guardians=[],marks={}
 const today=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};
 $('registerDate').value=today();const monthAgo=new Date();monthAgo.setDate(monthAgo.getDate()-29);$('reportFrom').value=[monthAgo.getFullYear(),String(monthAgo.getMonth()+1).padStart(2,'0'),String(monthAgo.getDate()).padStart(2,'0')].join('-');$('reportTo').value=today();
 function msg(text,type=''){const el=$('message');el.textContent=text;el.className='message'+(type?' '+type:'');el.classList.remove('hidden');}
+function workspaceLoadFailed(error){show('authView');msg('Your sign-in is still active, but SchoolFlow could not finish loading your workspace. '+(error?.message||String(error))+' You can retry without signing in again.','error');$('retryWorkspaceBtn').classList.remove('hidden')}
+$('retryWorkspaceBtn').addEventListener('click',async()=>{const b=$('retryWorkspaceBtn');b.disabled=true;b.textContent='Retrying…';try{if(!user){const {data:{session},error}=await db.auth.getSession();if(error)throw error;if(!session)throw new Error('Your session has expired. Please sign in again.');user=session.user;}await loadProfile();b.classList.add('hidden');b.textContent='Retry loading workspace';}catch(error){workspaceLoadFailed(error)}finally{b.disabled=false}});
 function clearMsg(){$('message').classList.add('hidden')}
 function busy(form,on){form.querySelectorAll('button').forEach(b=>b.disabled=on)}
 function show(view){['authView','setupView','appView'].forEach(id=>$(id).classList.toggle('hidden',id!==view));$('signOutBtn').classList.toggle('hidden',view==='authView')}
@@ -385,12 +387,12 @@ if(b.dataset.studentAction==='cancel'){renderStudentDirectory()}
 }catch(err){msg(err.message||'Student action failed.','error')}});
 $('studentDirectory').addEventListener('submit',async e=>{const form=e.target.closest('form[data-student-edit]');if(!form)return;e.preventDefault();const s=students.find(x=>x.id===form.dataset.studentEdit);if(!s)return;const data=new FormData(form),name=String(data.get('full_name')||'').trim(),code=String(data.get('student_code')||'').trim()||null,classId=String(data.get('class_id')||'');if(!name||!classId){msg('Full name and class are required.','error');return}const save=form.querySelector('button[type="submit"]');save.disabled=true;try{const {error}=await db.from('students').update({full_name:name,student_code:code,class_id:classId}).eq('id',s.id);if(error)throw error;await loadStudents();renderClasses();renderRegister();msg('Student details updated.','success')}catch(err){msg(err.message||'Could not update student.','error')}finally{save.disabled=false}});
 $('inviteForm').addEventListener('submit',async e=>{e.preventDefault();const f=e.currentTarget;busy(f,true);clearMsg();try{const email=$('inviteEmail').value.trim().toLowerCase(),role=$('inviteRole').value;const {error:inviteError}=await db.rpc('schoolflow_create_invite',{p_email:email,p_role:role});if(inviteError)throw inviteError;const {data:emailData,error:emailError}=await db.functions.invoke('schoolflow-send-invite-email',{body:{email,role}});if(emailError)throw new Error(emailError.message||'Invitation was saved, but the email could not be sent. Check Supabase Auth email settings.');if(emailData?.error)throw new Error(emailData.error);$('inviteEmail').value='';await loadStaff();msg('Invitation email sent to '+email+'. Ask the staff member to check their inbox and spam folder.','success')}catch(err){msg(err.message||'Could not send staff invitation. Check Supabase Auth email settings and try again.','error')}finally{busy(f,false)}});
-$('signInForm').addEventListener('submit',async e=>{e.preventDefault();const f=e.currentTarget;busy(f,true);msg('Checking your sign-in details…');try{const {data,error}=await db.auth.signInWithPassword({email:$('loginEmail').value.trim(),password:$('loginPassword').value});if(error)throw error;user=data.user;await loadProfile()}catch(e){show('authView');msg(e.message||'Sign-in failed. Please try again.','error')}finally{busy(f,false)}});
+$('signInForm').addEventListener('submit',async e=>{e.preventDefault();const f=e.currentTarget;busy(f,true);msg('Checking your sign-in details…');try{const {data,error}=await db.auth.signInWithPassword({email:$('loginEmail').value.trim(),password:$('loginPassword').value});if(error)throw error;user=data.user;await loadProfile()}catch(e){if(user){workspaceLoadFailed(e)}else{show('authView');msg(e.message||'Sign-in failed. Please check your details and try again.','error')}}finally{busy(f,false)}});
 $('signUpForm').addEventListener('submit',async e=>{e.preventDefault();const f=e.currentTarget;busy(f,true);clearMsg();try{const {data,error}=await db.auth.signUp({email:$('newEmail').value.trim().toLowerCase(),password:$('newPassword').value,options:{data:{full_name:$('newName').value.trim()},emailRedirectTo:'https://mento-schoolflow.vercel.app/portal.html'}});if(error)throw error;if(!data.session){msg('Account created. Check your email to confirm it, then sign in. After sign-in, use the first-administrator setup option only if you are creating a new school.','success')}else{user=data.user;if($('firstAdmin').checked){show('setupView');$('setupFullName').value=$('newName').value.trim()}else{const {error:inviteError}=await db.rpc('schoolflow_accept_invite',{p_full_name:$('newName').value.trim()});if(inviteError){show('authView');msg('Account was created, but the invitation could not be accepted: '+inviteError.message+'. Confirm that the invitation exists for this exact email, then sign in again.','error')}else{await loadProfile()}}}}catch(e){msg(e.message,'error')}finally{busy(f,false)}});
 $('setupForm').addEventListener('submit',async e=>{e.preventDefault();const f=e.currentTarget;busy(f,true);try{const {data,error}=await db.rpc('schoolflow_setup_school',{p_school_name:$('schoolName').value.trim(),p_full_name:$('setupFullName').value.trim()});if(error)throw error;await loadProfile();msg('School workspace created.','success')}catch(e){msg(e.message,'error')}finally{busy(f,false)}});
 $('acceptInviteBtn').addEventListener('click',async()=>{const b=$('acceptInviteBtn');b.disabled=true;try{const fullName=$('setupFullName').value.trim();if(!fullName)throw new Error('Enter your full name first.');const {error}=await db.rpc('schoolflow_accept_invite',{p_full_name:fullName});if(error)throw error;await loadProfile();msg('Staff invitation accepted.','success')}catch(e){msg(e.message,'error')}finally{b.disabled=false}});
 $('signOutBtn').addEventListener('click',async()=>{await db.auth.signOut();user=null;profile=null;show('authView');msg('Signed out.','success')});
-async function start(){try{const {data:{session}}=await db.auth.getSession();if(!session){show('authView');return}user=session.user;await loadProfile()}catch(e){show('authView');msg(e.message,'error')}}
+async function start(){try{const {data:{session},error}=await db.auth.getSession();if(error)throw error;if(!session){show('authView');return}user=session.user;await loadProfile()}catch(e){if(user){workspaceLoadFailed(e)}else{show('authView');msg('Unable to check your sign-in session: '+(e.message||'Please refresh and try again.'),'error')}}}
 db.auth.onAuthStateChange((_event,session)=>{if(!session){user=null;profile=null;show('authView')}});
 window.__schoolflowModuleReady = true;
 start();

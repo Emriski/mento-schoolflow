@@ -23,7 +23,11 @@ function message(t,type=''){ $('message').textContent=t;$('message').className='
 function showApp(on){$('auth').classList.toggle('hidden',on);$('dashboard').classList.toggle('hidden',!on);$('signOut').classList.toggle('hidden',!on);}
 async function load(){
  user=(await db.auth.getUser()).data.user;if(!user){showApp(false);return}showApp(true);
- // Only a school-admin-linked Auth user ID can reveal guardian records.
+ // Staff accounts must use the staff portal, even if a guardian link exists.
+ const staffProfile=await db.from('profiles').select('id,role').eq('id',user.id).maybeSingle();
+ if(staffProfile.error)throw staffProfile.error;
+ if(staffProfile.data){await db.auth.signOut();user=null;showApp(false);message('This account is registered as '+staffProfile.data.role.replace('_',' ')+'. Please sign in through the Staff Portal.','error');return}
+ // Parent access requires an explicit guardian link for this authenticated account.
  const g=await db.from('student_guardians').select('student_id,school_id,guardian_name').eq('guardian_user_id',user.id);
  if(g.error)throw g.error;
  const ids=[...new Set((g.data||[]).map(x=>x.student_id))];schoolId=g.data?.[0]?.school_id||null;

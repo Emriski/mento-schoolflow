@@ -113,7 +113,7 @@ $('feeScheduleForm').addEventListener('submit',async e=>{
  try{
   const classId=$('feeScheduleClass').value,year=$('feeScheduleYear').value.trim(),term=$('feeScheduleTerm').value;
   const lines=$('feeScheduleItems').value.split(String.fromCharCode(10)).map(x=>x.trim()).filter(Boolean);
-  const items=lines.map(line=>{const m=line.match(/^(.+?)\\s*=\\s*(\\d+(?:\\.\\d{1,2})?)$/);if(!m)throw new Error('Use one charge per line, for example: Tuition = 25000');return {name:m[1].trim(),amount:Number(m[2])}});
+  const items=lines.map(line=>{const m=line.match(/^(.+?)\s*=\s*(\\d+(?:\\.\\d{1,2})?)$/);if(!m)throw new Error('Use one charge per line, for example: Tuition = 25000');return {name:m[1].trim(),amount:Number(m[2])}});
   if(!classId||!year||!items.length||items.some(x=>!x.name||x.amount<=0))throw new Error('Choose a class and academic year, then enter at least one valid charge.');
   const total=items.reduce((n,x)=>n+x.amount,0);
   const {error}=await db.from('school_fee_schedules').upsert({school_id:profile.school_id,class_id:classId,academic_year:year,term,items,total_due:total,is_published:$('feeSchedulePublish').checked,created_by:user.id,updated_at:new Date().toISOString()},{onConflict:'school_id,class_id,academic_year,term'});

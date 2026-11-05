@@ -6,7 +6,7 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const money=v=>'₦'+Number(v||0).toLocaleString('en-NG');
 function message(t,type=''){ $('message').textContent=t;$('message').className='message '+type;$('message').classList.remove('hidden');}
 function showApp(on){$('auth').classList.toggle('hidden',on);$('dashboard').classList.toggle('hidden',!on);$('signOut').classList.toggle('hidden',!on);}
-async function load(){
+async function loadAccount(){
  user=(await db.auth.getUser()).data.user;if(!user){showApp(false);return}showApp(false);
  // Staff accounts must use the staff portal, even if a guardian link exists.
  const staffProfile=await db.from('profiles').select('id,role').eq('id',user.id).maybeSingle();
@@ -32,6 +32,8 @@ async function load(){
  await loadConversations();
 }
 
+let parentLoadPromise=null;
+function load(){if(parentLoadPromise)return parentLoadPromise;parentLoadPromise=loadAccount().catch(async e=>{showApp(false);await db.auth.signOut();throw e}).finally(()=>{parentLoadPromise=null});return parentLoadPromise}
 function chatStatus(t){$('chatStatus').textContent=t||''}
 function closeChatChannel(){if(chatChannel){db.removeChannel(chatChannel);chatChannel=null}}
 async function loadConversations(){

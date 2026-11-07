@@ -1,3 +1,4 @@
+import { createClient } from "@supabase/supabase-js";
 
 const db=createClient('https://rkwcfkkckfitcgvstekr.supabase.co','sb_publishable_eFBNcaDH6ZtRBo2lIRORug_BDmCDFyC');
 const $=id=>document.getElementById(id);let user=null,children=[],results=[],fees=[],attendance=[],schoolId=null,activeConversation=null,chatChannel=null,chatMode='parent_teacher',chatRecipients=[],pendingChatMessageId=null;

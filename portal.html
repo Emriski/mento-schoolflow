@@ -100,18 +100,19 @@ window.addEventListener('DOMContentLoaded', () => {
             message.className = 'message error';
             message.classList.remove('hidden');
           }
-        }, 0);
+        }, 5000);
       }
     }, true);
   });
 });
 window.addEventListener('error', (event) => {
-  // Resource-load errors do not bubble. Only handle a failed module script;
-  // unrelated images, stylesheets and runtime errors must not be reported as auth failures.
-  if (window.__schoolflowModuleReady || event.target?.tagName !== 'SCRIPT' || event.target?.type !== 'module') return;
+  // Detect both module download failures and runtime errors thrown by the staff bundle.
+  const failedModuleLoad = event.target?.tagName === 'SCRIPT' && event.target?.type === 'module';
+  const moduleRuntimeError = typeof event.filename === 'string' && event.filename.includes('/assets/portal.js');
+  if (window.__schoolflowModuleReady || (!failedModuleLoad && !moduleRuntimeError)) return;
   const message = document.getElementById('message');
   if (message) {
-    message.textContent = 'The SchoolFlow sign-in service could not be loaded. Check your internet connection, refresh the page, and try again. If the problem continues, contact Mento Solutions.';
+    message.textContent = 'The SchoolFlow sign-in service could not be loaded. Refresh the page and try again. If the problem continues, contact Mento Solutions.';
     message.className = 'message error';
     message.classList.remove('hidden');
   }

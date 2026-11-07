@@ -1,3 +1,4 @@
+import { createClient } from "@supabase/supabase-js";
 
 const db=createClient('https://rkwcfkkckfitcgvstekr.supabase.co','sb_publishable_eFBNcaDH6ZtRBo2lIRORug_BDmCDFyC');
 const $=id=>document.getElementById(id);let user=null,children=[],results=[],fees=[],attendance=[],schoolId=null,activeConversation=null,chatChannel=null,chatMode='parent_teacher',chatRecipients=[],pendingChatMessageId=null;
@@ -108,4 +109,4 @@ $('signup').addEventListener('submit',async e=>{e.preventDefault();try{const {da
 $('signOut').addEventListener('click',async()=>{await db.auth.signOut();showApp(false);message('You have signed out.')});
 document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));['children','results','attendance','fees','messages'].forEach(id=>$(id).classList.toggle('hidden',id!==b.dataset.tab))}));
 db.auth.onAuthStateChange((event,session)=>{if(event==='PASSWORD_RECOVERY'){$('auth').classList.add('hidden');$('dashboard').classList.add('hidden');$('recoveryView').classList.remove('hidden');message('Choose a new password to finish recovering your account.');return}if(session)setTimeout(()=>load().catch(e=>message(e.message||'Unable to load parent data. Check database permissions.','error')),0);else showApp(false)});
-try{await load()}catch(e){message(e.message||'Unable to load parent data. Database permissions may not be configured yet.','error')}
+load().catch(e=>message(e.message||'Unable to load parent data. Database permissions may not be configured yet.','error'))

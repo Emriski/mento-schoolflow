@@ -1,12 +1,12 @@
 import { createClient } from "@supabase/supabase-js";
 
 const db=createClient('https://rkwcfkkckfitcgvstekr.supabase.co','sb_publishable_eFBNcaDH6ZtRBo2lIRORug_BDmCDFyC');
-const $=id=>document.getElementById(id);let user=null,children=[],results=[],fees=[],attendance=[],schoolId=null,activeConversation=null,chatChannel=null,chatMode='parent_teacher',chatRecipients=[],pendingChatMessageId=null;
+const $=id=>document.getElementById(id);let user=null,children=[],results=[],fees=[],feeSchedules=[],attendance=[],schoolId=null,activeConversation=null,chatChannel=null,chatMode='parent_teacher',chatRecipients=[],pendingChatMessageId=null;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=v=>'₦'+Number(v||0).toLocaleString('en-NG');
 function message(t,type=''){ $('message').textContent=t;$('message').className='message '+type;$('message').classList.remove('hidden');}
 function showApp(on){$('auth').classList.toggle('hidden',on);$('dashboard').classList.toggle('hidden',!on);$('signOut').classList.toggle('hidden',!on);}
-async function load(){
+async function loadAccount(){
  user=(await db.auth.getUser()).data.user;if(!user){showApp(false);return}showApp(false);
  // Staff accounts must use the staff portal, even if a guardian link exists.
  const staffProfile=await db.from('profiles').select('id,role').eq('id',user.id).maybeSingle();
@@ -26,12 +26,20 @@ async function load(){
  ]);
  for(const x of [s,r,f,a])if(x.error)throw x.error;
  children=s.data||[];results=r.data||[];fees=f.data||[];attendance=a.data||[];
+ const classIds=[...new Set(children.map(x=>x.class_id).filter(Boolean))];
+ feeSchedules=[];
+ if(classIds.length){
+  const fs=await db.from('school_fee_schedules').select('id,class_id,academic_year,term,items,total_due').in('class_id',classIds).eq('school_id',schoolId).eq('is_published',true).order('academic_year',{ascending:false});
+  if(!fs.error)feeSchedules=fs.data||[];
+ }
  const sessionIds=[...new Set(attendance.map(x=>x.session_id).filter(Boolean))];
  if(sessionIds.length){const ss=await db.from('attendance_sessions').select('id,attendance_date,class_id').in('id',sessionIds);if(ss.error)throw ss.error;const map=new Map((ss.data||[]).map(x=>[x.id,x]));attendance=attendance.map(x=>({...x,session:map.get(x.session_id)}));}
  render();
  await loadConversations();
 }
 
+let parentLoadPromise=null;
+function load(){if(parentLoadPromise)return parentLoadPromise;parentLoadPromise=loadAccount().catch(async e=>{showApp(false);await db.auth.signOut();throw e}).finally(()=>{parentLoadPromise=null});return parentLoadPromise}
 function chatStatus(t){$('chatStatus').textContent=t||''}
 function closeChatChannel(){if(chatChannel){db.removeChannel(chatChannel);chatChannel=null}}
 async function loadConversations(){
@@ -99,7 +107,7 @@ function render(){
  $('children').innerHTML=children.length?children.map(c=>'<div class="student"><h3>'+esc(c.full_name)+'</h3><div class="muted">Student ID: '+esc(c.student_code||'Not assigned')+'</div></div>').join(''):'<p>No linked children found.</p>';
  $('results').innerHTML='<h2>Academic results</h2>'+(results.length?'<div class="tablewrap"><table><thead><tr><th>Student</th><th>Year / Term</th><th>Subject</th><th>Score</th><th>Grade</th><th>Remarks</th></tr></thead><tbody>'+results.map(x=>'<tr><td>'+esc(childName(x.student_id))+'</td><td>'+esc(x.academic_year)+' / '+esc(x.term)+'</td><td>'+esc(x.subject)+'</td><td>'+esc(x.total_score)+' / '+esc(x.total_max)+' ('+esc(x.percentage)+'%)</td><td>'+esc(x.grade)+'</td><td>'+esc(x.remarks||'—')+'</td></tr>').join('')+'</tbody></table></div>':'<p>No results have been published for your linked children yet.</p>');
  $('attendance').innerHTML='<h2>Attendance history</h2>'+(attendance.length?'<div class="tablewrap"><table><thead><tr><th>Student</th><th>Date</th><th>Status</th></tr></thead><tbody>'+attendance.map(x=>'<tr><td>'+esc(childName(x.student_id))+'</td><td>'+esc(x.session?.attendance_date||x.marked_at||'—')+'</td><td>'+esc(x.status)+'</td></tr>').join('')+'</tbody></table></div>':'<p>No attendance records available yet.</p>');
- $('fees').innerHTML='<h2>School fees</h2>'+(fees.length?'<div class="tablewrap"><table><thead><tr><th>Student</th><th>Year / Term</th><th>Amount due</th><th>Paid</th><th>Balance</th><th>Status</th></tr></thead><tbody>'+fees.map(x=>'<tr><td>'+esc(childName(x.student_id))+'</td><td>'+esc(x.academic_year)+' / '+esc(x.term)+'</td><td>'+money(x.amount_due)+'</td><td>'+money(x.amount_paid)+'</td><td>'+money(Math.max(0,Number(x.amount_due||0)-Number(x.amount_paid||0)))+'</td><td>'+esc(x.payment_status)+'</td></tr>').join('')+'</tbody></table></div>':'<p>No fee records available yet.</p>');
+ $('fees').innerHTML='<h2>School fees</h2>'+(feeSchedules.length?'<h3>Published class fee schedules</h3>'+feeSchedules.map(x=>{const names=children.filter(ch=>ch.class_id===x.class_id).map(ch=>esc(ch.full_name)).join(', ');const items=Array.isArray(x.items)?x.items:[];return '<div class="student"><strong>'+esc(names||'Your child')+' · '+esc(x.academic_year)+' / '+esc(x.term)+'</strong><ul>'+items.map(i=>'<li>'+esc(i.name)+': '+money(i.amount)+'</li>').join('')+'</ul><strong>Total: '+money(x.total_due)+'</strong></div>'}).join(''):'<p class="muted">No published class fee schedule is available for your linked children yet.</p>')+(fees.length?'<div class="tablewrap"><table><thead><tr><th>Student</th><th>Year / Term</th><th>Amount due</th><th>Paid</th><th>Balance</th><th>Status</th></tr></thead><tbody>'+fees.map(x=>'<tr><td>'+esc(childName(x.student_id))+'</td><td>'+esc(x.academic_year)+' / '+esc(x.term)+'</td><td>'+money(x.amount_due)+'</td><td>'+money(x.amount_paid)+'</td><td>'+money(Math.max(0,Number(x.amount_due||0)-Number(x.amount_paid||0)))+'</td><td>'+esc(x.payment_status)+'</td></tr>').join('')+'</tbody></table></div>':'<p>No fee records available yet.</p>');
 }
 document.querySelectorAll('[data-toggle-password]').forEach(b=>b.addEventListener('click',()=>{const input=$(b.dataset.togglePassword);if(!input)return;const reveal=input.type==='password';input.type=reveal?'text':'password';b.textContent=reveal?'Hide':'Show';b.setAttribute('aria-pressed',String(reveal))}));
 $('forgotPasswordBtn').addEventListener('click',async()=>{const email=$('email').value.trim();if(!email){message('Enter your account email address first, then select Forgot password again.','error');$('email').focus();return}const b=$('forgotPasswordBtn');b.disabled=true;try{const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:'https://mento-schoolflow.vercel.app/parent.html'});if(error)throw error;message('If an account exists for '+email+', a password-reset email has been requested. Check your inbox and spam folder.','success')}catch(e){message(e.message||'Could not request a password reset. Please try again.','error')}finally{b.disabled=false}});

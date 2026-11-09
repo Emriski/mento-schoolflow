@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL='https://rkwcfkkckfitcgvstekr.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_eFBNcaDH6ZtRBo2lIRORug_BDmCDFyC';
-const db=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{storageKey:'schoolflow-staff-auth-token'}});
+const db=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const $=id=>document.getElementById(id);
 let user=null,profile=null,classes=[],students=[],staff=[],guardians=[],marks={},reportRows=[];
 const today=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};

@@ -95,7 +95,7 @@ function renderWorkspaceOverview(){
   ['Active students',activeStudents.length,'Approved and active student records'],
   ['Classes',classes.length,'Class groups in this school'],
   ['Teaching staff',teacherCount,'Teacher profiles in this workspace'],
-  ...(isAdmin?[['Fees recorded',naira(feeRecords.reduce((sum,r)=>sum+Number(r.amount_paid||0),0)),'Payments recorded for '+currentAcademicYear()]]:[['Admissions to review',pendingAdmissions,'Applications awaiting a decision']])
+  ...(isAdmin?[['Fees collected',naira(feeRecords.reduce((sum,r)=>sum+Number(r.amount_paid||0),0)),'Payments recorded for '+currentAcademicYear()]]:[['Admissions to review',pendingAdmissions,'Applications awaiting a decision']])
  ];
  $('overviewMetrics').innerHTML=metrics.map(x=>'<article class="overview-metric"><div class="overview-metric-label">'+esc(x[0])+'</div><div class="overview-metric-value">'+esc(x[1])+'</div><div class="overview-metric-note">'+esc(x[2])+'</div></article>').join('');
  const firstName=(profile?.full_name||'').trim().split(/\s+/)[0]||'there';

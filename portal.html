@@ -82,6 +82,29 @@ body{background:var(--sf-bg);color:var(--sf-ink);font-family:Inter,ui-sans-serif
 @media(max-width:680px){.shell{padding:12px}.workspace-heading{padding:15px!important}.workspace-heading h1{font-size:21px}.workspace-heading-main{align-items:flex-start}.workspace-heading-actions{align-items:flex-end;flex-direction:column;gap:6px}.workspace-date{font-size:9px}.overview-panel{padding:15px!important}.overview-hero{display:block}.overview-live{margin-top:12px}.overview-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.overview-metric{padding:12px}.overview-metric-value{font-size:22px}.overview-actions{grid-template-columns:1fr}.overview-snapshot{padding:4px 12px}}
 @media(max-width:420px){.workspace-heading-main{display:block}.workspace-heading-actions{margin-top:10px;flex-direction:row;justify-content:space-between;align-items:center}.overview-metric-value{font-size:20px}}
 
+/* First impression — staff sign-in */
+#authView{grid-template-columns:minmax(0,1.08fr) minmax(340px,.92fr);gap:14px;align-items:stretch;min-height:min(680px,calc(100vh - 150px))}
+#authView>.panel{border-radius:9px;padding:30px 32px;margin:0;box-shadow:none}
+#authView>.panel:first-child{position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;justify-content:center;background:#292267;border-color:#292267;color:#fff;min-height:490px}
+#authView>.panel:first-child:before{content:"";position:absolute;z-index:-1;width:340px;height:340px;right:-120px;top:-115px;border:1px solid rgba(255,255,255,.19);border-radius:50%;box-shadow:0 0 0 36px rgba(255,255,255,.055),0 0 0 78px rgba(255,255,255,.035),0 0 0 122px rgba(255,255,255,.02)}
+#authView>.panel:first-child:after{content:"SCHOOL OPERATIONS  /  MENTO SOLUTIONS";display:block;margin-top:27px;padding-top:17px;border-top:1px solid rgba(255,255,255,.2);font-size:9px;letter-spacing:1.25px;font-weight:800;color:#c9c5e8}
+#authView>.panel:first-child h1{max-width:14ch;font-size:clamp(30px,3.5vw,42px);line-height:1.08;letter-spacing:-1.2px;color:#fff;margin-bottom:12px}
+#authView>.panel:first-child>p{max-width:43ch;color:#d8d6ed;font-size:13px;line-height:1.7;margin-bottom:25px}
+#authView>.panel:first-child label{color:#e7e5f4}
+#authView>.panel:first-child input{background:#fff;border-color:rgba(255,255,255,.35);color:#20243a}
+#authView>.panel:first-child input:focus{outline:2px solid #bcb6f4;outline-offset:2px}
+#authView>.panel:first-child button[type=submit]{background:#fff;color:#292267;border:1px solid #fff}
+#authView>.panel:first-child button[type=submit]:hover{background:#efeff8}
+#authView>.panel:first-child button.secondary{background:transparent;color:#fff;border-color:rgba(255,255,255,.4)}
+#authView>.panel:first-child .password-toggle{background:#f0eff8;color:#292267;border-color:#f0eff8}
+#authView>.panel:first-child #forgotPasswordBtn{margin-left:5px}
+#authView>.panel:last-child{display:flex;flex-direction:column;justify-content:center;background:#fff}
+#authView>.panel:last-child h2{font-size:21px;letter-spacing:-.5px}
+#authView>.panel:last-child>p{font-size:12px;line-height:1.65}
+#authView .notice{border-left:3px solid #d9d6ef;background:#f7f7fb;padding:12px 14px}
+@media(max-width:760px){#authView{grid-template-columns:1fr;min-height:0}#authView>.panel:first-child{min-height:0;padding:25px 22px}#authView>.panel:last-child{padding:24px 22px}}
+@media(max-width:420px){#authView>.panel:first-child h1{font-size:30px}#authView>.panel:first-child #forgotPasswordBtn{margin:8px 0 0}}
+
 </style>
 </head>
 <body>
@@ -89,7 +112,7 @@ body{background:var(--sf-bg);color:var(--sf-ink);font-family:Inter,ui-sans-serif
 <header class="top"><div class="brand"><div class="logo">S</div><div><strong>SchoolFlow Staff Portal</strong><small>by Mento Solutions</small></div></div><button id="signOutBtn" class="secondary hidden" type="button">Sign out</button></header>
 <div id="message" class="message hidden" role="status"></div><button id="retryWorkspaceBtn" class="secondary hidden" type="button" style="margin:0 0 16px">Retry loading workspace</button>
 <section id="authView" class="grid">
-<div class="panel"><h1>Welcome back.</h1><p class="muted">Sign in to access your school's workspace.</p>
+<div class="panel"><h1>One connected workspace for your school.</h1><p class="muted">Bring admissions, attendance, academics and everyday school operations into one organised place. Sign in to continue.</p>
 <form id="signInForm"><div class="field"><label for="loginEmail">Email address</label><input id="loginEmail" type="email" autocomplete="email" required></div><div class="field"><label for="loginPassword">Password</label><div class="password-row"><input id="loginPassword" type="password" autocomplete="current-password" required minlength="8"><button type="button" class="secondary password-toggle" data-toggle-password="loginPassword" aria-pressed="false">Show</button></div></div><button type="submit">Sign in</button> <button id="forgotPasswordBtn" class="secondary" type="button">Forgot password?</button></form></div>
 <div class="panel"><h2>First time here?</h2><p class="muted">Create an account using your school invitation, or create the first administrator account for a new school.</p>
 <form id="signUpForm"><div class="field"><label for="newName">Full name</label><input id="newName" required autocomplete="name"></div><div class="field"><label for="newEmail">Email address</label><input id="newEmail" type="email" required autocomplete="email"></div><div class="field"><label for="newPassword">Password (at least 8 characters)</label><div class="password-row"><input id="newPassword" type="password" required minlength="8" autocomplete="new-password"><button type="button" class="secondary password-toggle" data-toggle-password="newPassword" aria-pressed="false">Show</button></div></div><div class="field"><label style="display:flex;gap:8px;align-items:flex-start;font-weight:500;color:var(--ink)"><input id="firstAdmin" type="checkbox" style="width:auto;margin-top:3px"> I am creating a new school as its first administrator.</label></div><button type="submit">Create account</button></form>

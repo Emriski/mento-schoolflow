@@ -105,6 +105,95 @@ body{background:var(--sf-bg);color:var(--sf-ink);font-family:Inter,ui-sans-serif
 @media(max-width:760px){#authView{grid-template-columns:1fr;min-height:0}#authView>.panel:first-child{min-height:0;padding:25px 22px}#authView>.panel:last-child{padding:24px 22px}}
 @media(max-width:420px){#authView>.panel:first-child h1{font-size:30px}#authView>.panel:first-child #forgotPasswordBtn{margin:8px 0 0}}
 
+
+/* Teal dashboard refresh — inspired by the reference shared by the SchoolFlow team. */
+:root{--sf-teal:#087f89;--sf-teal-dark:#076b75;--sf-teal-mid:#159e9a;--sf-mint:#65c8b8;--sf-pale:#e7f5f3;--sf-canvas:#f2f7f8;--sf-ink:#21323a;--sf-muted:#70818a;--sf-line:#e2eaec;--sf-orange:#e9a15b;--sf-coral:#e87970;--sf-blue:#4e9fc1}
+body{background:var(--sf-canvas);color:var(--sf-ink)}
+button{background:var(--sf-teal);border-radius:8px}
+button:hover{background:var(--sf-teal-dark)}
+button.secondary{background:#fff;color:var(--sf-teal-dark);border-color:#cfe3e3}
+button.secondary:hover{background:var(--sf-pale)}
+input:focus,select:focus,textarea:focus{outline:2px solid #9ad8d2;border-color:var(--sf-teal)}
+.shell{background:var(--sf-canvas)}
+.top{background:linear-gradient(105deg,#087681,#159e9a);color:#fff;border:0;border-radius:12px;padding:13px 18px;margin-bottom:18px;box-shadow:0 8px 24px rgba(8,127,137,.15)}
+.top .brand strong,.top .brand small{color:#fff}
+.top .logo{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.24)}
+.top button.secondary{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.35);color:#fff}
+#appView{grid-template-columns:224px minmax(0,1fr);gap:18px}
+#appView>.tabs{background:#fff;border-color:var(--sf-line);border-radius:12px;box-shadow:0 4px 18px rgba(26,75,82,.045)}
+#appView>.tabs .nav-group+.nav-group{border-color:#edf2f3}
+#appView>.tabs .nav-group-title{color:#91a2a8}
+#appView>.tabs button{color:#53666d;border-radius:8px}
+#appView>.tabs button:hover{background:#eef8f7;color:var(--sf-teal-dark)}
+#appView>.tabs button.active{background:#e5f4f2;color:var(--sf-teal-dark);box-shadow:inset 3px 0 var(--sf-teal)}
+#appView>.panel:first-child{border-radius:12px;border:1px solid var(--sf-line);box-shadow:0 4px 18px rgba(26,75,82,.045)}
+.panel{border-color:var(--sf-line);border-radius:12px;box-shadow:0 4px 18px rgba(26,75,82,.045)}
+.workspace-heading h1{color:#fff}
+.workspace-heading{background:linear-gradient(105deg,#087681,#159e9a)!important;color:#fff;border-color:transparent!important}
+.workspace-heading .eyebrow,.workspace-heading p,.workspace-heading .workspace-date{color:#d9f2f0}
+.workspace-heading .status{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.22)}
+.overview-panel{background:transparent!important;border:0!important;padding:0!important;box-shadow:none!important}
+.overview-hero{align-items:center;border:0;padding:5px 2px 18px}
+.overview-hero h2{color:var(--sf-teal-dark);font-size:25px}
+.overview-hero p{color:var(--sf-muted)}
+.overview-live{background:#e6f6ee;border-color:#ccebd8;color:#27835b;border-radius:20px}
+.overview-live i{background:#2aa56d}
+.overview-metrics{gap:13px;padding:0 0 16px}
+.overview-metric{position:relative;overflow:hidden;border:1px solid var(--sf-line);border-radius:12px;padding:17px;background:#fff;box-shadow:0 4px 15px rgba(26,75,82,.035)}
+.overview-metric:after{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--metric-color,var(--sf-teal))}
+.overview-metric:nth-child(2){--metric-color:var(--sf-mint)}
+.overview-metric:nth-child(3){--metric-color:var(--sf-blue)}
+.overview-metric:nth-child(4){--metric-color:var(--sf-orange)}
+.overview-metric-label{color:var(--sf-muted);font-size:11px}
+.overview-metric-value{color:var(--sf-teal-dark);font-size:26px}
+.overview-metric-note{color:var(--sf-muted)}
+.overview-analytics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-bottom:16px}
+.overview-block{background:#fff;border-color:var(--sf-line);border-radius:12px;overflow:hidden}
+.overview-block-head{border-color:#edf2f3;padding:16px 17px 12px}
+.overview-block-head h3{color:#273e45}
+.overview-block-head p{color:var(--sf-muted)}
+.overview-actions{padding:13px}
+.overview-action{border-color:var(--sf-line);border-radius:9px;color:#344b52}
+.overview-action:hover{background:#edf8f6;border-color:#b7dfd9;color:var(--sf-teal-dark)}
+.overview-action span:last-child{color:var(--sf-teal)}
+.overview-snapshot-row{border-color:#edf2f3}
+.overview-snapshot-row strong{color:#304a50}
+.overview-footnote{color:#7e9096}
+.sf-chart{padding:0 16px 16px}
+.sf-chart-title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.sf-chart-title strong{font-size:12px;color:#314950}
+.sf-chart-title span{font-size:10px;color:var(--sf-muted)}
+.sf-donut-layout{display:grid;grid-template-columns:140px 1fr;align-items:center;gap:18px;min-height:154px}
+.sf-donut{width:132px;height:132px;border-radius:50%;display:grid;place-items:center;position:relative;margin:auto}
+.sf-donut:before{content:"";position:absolute;inset:13px;background:#fff;border-radius:50%}
+.sf-donut-center{position:relative;text-align:center}
+.sf-donut-center strong{display:block;font-size:26px;color:var(--sf-teal-dark)}
+.sf-donut-center span{font-size:9px;color:var(--sf-muted)}
+.sf-legend{display:grid;gap:11px}
+.sf-legend-row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:10px;color:var(--sf-muted)}
+.sf-legend-row span{display:flex;align-items:center;gap:7px}
+.sf-legend-row i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.sf-legend-row b{font-size:11px;color:#344b52}
+.sf-fee-bars{display:grid;gap:11px;padding:3px 0 4px}
+.sf-fee-bar{height:13px;border-radius:8px;background:#edf2f3;overflow:hidden;display:flex}
+.sf-fee-bar span{height:100%;display:block}
+.sf-fee-label{display:flex;justify-content:space-between;gap:8px;font-size:10px;color:var(--sf-muted)}
+.sf-fee-label b{color:#344b52}
+.sf-exam-bars{display:flex;align-items:flex-end;gap:12px;height:105px;padding:8px 6px 0;border-bottom:1px solid var(--sf-line)}
+.sf-exam-group{display:flex;align-items:flex-end;justify-content:center;gap:4px;flex:1;height:100%;min-width:0}
+.sf-exam-group i{display:block;flex:1;max-width:20px;border-radius:4px 4px 0 0;min-height:3px}
+.sf-exam-labels{display:flex;justify-content:space-around;gap:6px;padding-top:7px;color:var(--sf-muted);font-size:9px}
+.sf-empty{padding:16px;border:1px dashed #cddfe1;border-radius:9px;background:#f8fbfb;color:var(--sf-muted);font-size:11px;line-height:1.6}
+.sf-schedule{width:100%;border-collapse:collapse;font-size:10px}
+.sf-schedule th,.sf-schedule td{padding:9px 7px;border-bottom:1px solid #edf2f3;text-align:left}
+.sf-schedule th{color:var(--sf-muted);font-weight:750;background:#f7fafb}
+.sf-schedule td{color:#41565c}
+.sf-schedule td:first-child{font-weight:750;color:var(--sf-teal-dark)}
+.status{background:#e7f5f3;color:var(--sf-teal-dark)}
+.message.success{background:#e7f6ee;color:#23784f}
+@media(max-width:1000px){#appView{grid-template-columns:190px minmax(0,1fr);gap:13px}.overview-analytics{grid-template-columns:1fr}}
+@media(max-width:680px){.shell{padding:10px}.top{border-radius:10px;padding:11px 12px}.workspace-heading{border-radius:10px}.overview-hero{display:block}.overview-live{margin-top:10px}.overview-metrics{gap:8px}.overview-metric{padding:13px}.overview-metric-value{font-size:22px}.sf-donut-layout{grid-template-columns:120px 1fr;gap:8px}.sf-donut{width:112px;height:112px}.sf-donut:before{inset:11px}.sf-donut-center strong{font-size:22px}.sf-chart{padding:0 12px 13px}}
+@media(max-width:420px){.sf-donut-layout{grid-template-columns:1fr}.sf-legend{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -122,7 +211,16 @@ body{background:var(--sf-bg);color:var(--sf-ink);font-family:Inter,ui-sans-serif
 <section id="setupView" class="panel hidden"><h1>Set up your school</h1><p class="muted">This account has no SchoolFlow profile yet. Use this only for the first administrator of a new school. Invited staff should sign out and sign up with their invitation email.</p><form id="setupForm" class="grid"><div class="field"><label for="schoolName">School name</label><input id="schoolName" required></div><div class="field"><label for="setupFullName">Your full name</label><input id="setupFullName" required></div><div class="row"><button type="submit">Create school workspace</button><button id="acceptInviteBtn" class="secondary" type="button">Accept staff invitation</button></div></form></section>
 <section id="appView" class="hidden"><div class="panel workspace-heading"><div class="workspace-heading-main"><div><div class="eyebrow">SCHOOL OPERATIONS</div><h1 id="welcomeTitle">School workspace</h1><p id="welcomeSub" class="muted">Attendance and class management</p></div><div class="workspace-heading-actions"><span id="roleBadge" class="status">Staff</span><span class="workspace-date" id="workspaceDate"></span></div></div></div>
 <nav class="tabs" aria-label="Workspace sections"><div class="nav-group"><span class="nav-group-title">Overview</span><button class="active" data-tab="overview" type="button">School overview</button></div><div class="nav-group"><span class="nav-group-title">Workspace</span><button data-tab="attendance" type="button">Attendance</button><button data-tab="admissions" type="button">Admissions</button><button data-tab="intake" type="button">New intake</button><button data-tab="classes" type="button">Classes & students</button><button data-tab="results" type="button">Results & report cards</button></div><div class="nav-group"><span class="nav-group-title">School operations</span><button data-tab="fees" type="button">School fees</button><button data-tab="staff" type="button">Staff & invitations</button><button data-tab="parents" type="button">Parent accounts</button><button data-tab="messages" type="button">Messages</button></div><div class="nav-group"><span class="nav-group-title">Insights</span><button data-tab="reports" type="button">Reports</button></div></nav>
-<section id="tab-overview" class="panel overview-panel"><div class="overview-hero"><div><div class="eyebrow">YOUR SCHOOL, AT A GLANCE</div><h2 id="overviewGreeting">Welcome to SchoolFlow</h2><p id="overviewDescription">A clear view of the work that matters today.</p></div><span class="overview-live"><i></i> Live school records</span></div><div id="overviewMetrics" class="overview-metrics" aria-live="polite"></div><div class="overview-content-grid"><div class="overview-block"><div class="overview-block-head"><div><h3>Quick actions</h3><p>Go straight to a common task.</p></div></div><div id="overviewActions" class="overview-actions"></div></div><div class="overview-block"><div class="overview-block-head"><div><h3>Workspace snapshot</h3><p>Based on your current role and access.</p></div></div><div id="overviewSnapshot" class="overview-snapshot"></div></div></div><p class="overview-footnote">Figures are calculated from records your account can currently access. SchoolFlow does not fill missing records with estimates.</p></section><section id="tab-messages" class="panel hidden"><h2>School messages</h2><p class="muted">Parent–teacher conversations are visible to school administrators. Parent–admin conversations remain private to their participants. School community and staff groups are shared only with their listed members.</p><div class="grid"><div id="staffNewChatBox" class="item" style="display:block;margin-bottom:12px"><h3>Start a conversation</h3><label for="staffChatStudent">Student</label><select id="staffChatStudent"><option value="">Choose a student</option></select><label for="staffChatParent">Linked parent</label><select id="staffChatParent"><option value="">Choose a parent</option></select><label for="staffChatSubject">Subject</label><input id="staffChatSubject" maxlength="120" placeholder="Conversation subject"><button id="staffStartParentChat" type="button">Start parent conversation</button><p id="staffNewChatStatus" class="notice"></p><div id="staffGroupActions" class="hidden"><button id="createSchoolGroups" type="button" class="secondary">Create / refresh school groups</button><p class="muted">Creates the school-wide parents, teachers and admins group, plus the admins-and-teachers group.</p></div></div><div><div id="staffConversationList" class="list"></div></div><div><h3 id="staffChatTitle">Select a conversation</h3><div id="staffChatMessages" style="height:340px;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:12px;margin:12px 0"></div><div class="row"><textarea id="staffChatBody" rows="2" maxlength="5000" placeholder="Write a reply…" style="flex:1" disabled></textarea><button id="staffSendMessage" type="button" disabled>Send</button></div><p id="staffChatStatus" class="notice"></p></div></div></section><section id="tab-admissions" class="panel hidden"><div class="row"><div><h2>Student admissions</h2><p class="muted">Register applicants, record guardian contacts, and approve or reject enrollment. Only approved students enter active class registers.</p></div><span id="admissionCount" class="status">0 pending</span></div><form id="admissionForm" class="grid"><div class="field"><label for="admissionFullName">Student full name</label><input id="admissionFullName" required maxlength="160"></div><div class="field"><label for="admissionDob">Date of birth (optional)</label><input id="admissionDob" type="date"></div><div class="field"><label for="admissionClass">Requested class</label><select id="admissionClass" required><option value="">Choose a class</option></select></div><div class="field"><label for="admissionDate">Admission date</label><input id="admissionDate" type="date" required></div><div class="field"><label for="guardianName">Parent/guardian name</label><input id="guardianName" maxlength="160" required></div><div class="field"><label for="guardianPhone">Parent/guardian phone</label><input id="guardianPhone" type="tel" maxlength="40" required></div><div class="field"><label for="guardianEmail">Parent/guardian email (optional)</label><input id="guardianEmail" type="email" maxlength="254"></div><div class="field" style="align-self:end"><button type="submit">Submit admission</button></div></form><div class="grid" style="margin-top:16px"><div class="field"><label for="admissionSearch">Search applications</label><input id="admissionSearch" placeholder="Student, admission number, or guardian"></div><div class="field"><label for="admissionStatusFilter">Status</label><select id="admissionStatusFilter"><option value="pending">Pending review</option><option value="admitted">Admitted</option><option value="rejected">Rejected</option><option value="all">All applications</option></select></div></div><div id="admissionsList" class="list"></div><p class="notice">Admission numbers are generated automatically. Parent/guardian details are sensitive: only enter real records after confirming school access permissions.</p></section><section id="tab-intake" class="panel hidden"><div class="row"><div><h2>New intake</h2><p class="muted">Students assigned to your class appear here. Open a student profile to review their record and attendance history.</p></div><span id="intakeCount" class="status">0 students</span></div><div id="intakeList" class="list"></div></section><section id="tab-fees" class="panel hidden">
+<section id="tab-overview" class="panel overview-panel">
+<div class="overview-hero"><div><div class="eyebrow">YOUR SCHOOL, AT A GLANCE</div><h2 id="overviewGreeting">Welcome to SchoolFlow</h2><p id="overviewDescription">A clear view of the work that matters today.</p></div><span class="overview-live"><i></i> Live school records</span></div>
+<div id="overviewMetrics" class="overview-metrics" aria-live="polite"></div>
+<div id="overviewAnalytics" class="overview-analytics" aria-live="polite"></div>
+<div class="overview-content-grid">
+<div class="overview-block"><div class="overview-block-head"><div><h3>Quick actions</h3><p>Go straight to a common task.</p></div></div><div id="overviewActions" class="overview-actions"></div></div>
+<div class="overview-block"><div class="overview-block-head"><div><h3>Workspace snapshot</h3><p>Based on your current role and access.</p></div></div><div id="overviewSnapshot" class="overview-snapshot"></div></div>
+</div>
+<p class="overview-footnote">Figures are calculated from records your account can currently access. SchoolFlow does not fill missing records with estimates. Timetable information will appear here when the school's timetable is configured.</p>
+</section><section id="tab-messages" class="panel hidden"><h2>School messages</h2><p class="muted">Parent–teacher conversations are visible to school administrators. Parent–admin conversations remain private to their participants. School community and staff groups are shared only with their listed members.</p><div class="grid"><div id="staffNewChatBox" class="item" style="display:block;margin-bottom:12px"><h3>Start a conversation</h3><label for="staffChatStudent">Student</label><select id="staffChatStudent"><option value="">Choose a student</option></select><label for="staffChatParent">Linked parent</label><select id="staffChatParent"><option value="">Choose a parent</option></select><label for="staffChatSubject">Subject</label><input id="staffChatSubject" maxlength="120" placeholder="Conversation subject"><button id="staffStartParentChat" type="button">Start parent conversation</button><p id="staffNewChatStatus" class="notice"></p><div id="staffGroupActions" class="hidden"><button id="createSchoolGroups" type="button" class="secondary">Create / refresh school groups</button><p class="muted">Creates the school-wide parents, teachers and admins group, plus the admins-and-teachers group.</p></div></div><div><div id="staffConversationList" class="list"></div></div><div><h3 id="staffChatTitle">Select a conversation</h3><div id="staffChatMessages" style="height:340px;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:12px;margin:12px 0"></div><div class="row"><textarea id="staffChatBody" rows="2" maxlength="5000" placeholder="Write a reply…" style="flex:1" disabled></textarea><button id="staffSendMessage" type="button" disabled>Send</button></div><p id="staffChatStatus" class="notice"></p></div></div></section><section id="tab-admissions" class="panel hidden"><div class="row"><div><h2>Student admissions</h2><p class="muted">Register applicants, record guardian contacts, and approve or reject enrollment. Only approved students enter active class registers.</p></div><span id="admissionCount" class="status">0 pending</span></div><form id="admissionForm" class="grid"><div class="field"><label for="admissionFullName">Student full name</label><input id="admissionFullName" required maxlength="160"></div><div class="field"><label for="admissionDob">Date of birth (optional)</label><input id="admissionDob" type="date"></div><div class="field"><label for="admissionClass">Requested class</label><select id="admissionClass" required><option value="">Choose a class</option></select></div><div class="field"><label for="admissionDate">Admission date</label><input id="admissionDate" type="date" required></div><div class="field"><label for="guardianName">Parent/guardian name</label><input id="guardianName" maxlength="160" required></div><div class="field"><label for="guardianPhone">Parent/guardian phone</label><input id="guardianPhone" type="tel" maxlength="40" required></div><div class="field"><label for="guardianEmail">Parent/guardian email (optional)</label><input id="guardianEmail" type="email" maxlength="254"></div><div class="field" style="align-self:end"><button type="submit">Submit admission</button></div></form><div class="grid" style="margin-top:16px"><div class="field"><label for="admissionSearch">Search applications</label><input id="admissionSearch" placeholder="Student, admission number, or guardian"></div><div class="field"><label for="admissionStatusFilter">Status</label><select id="admissionStatusFilter"><option value="pending">Pending review</option><option value="admitted">Admitted</option><option value="rejected">Rejected</option><option value="all">All applications</option></select></div></div><div id="admissionsList" class="list"></div><p class="notice">Admission numbers are generated automatically. Parent/guardian details are sensitive: only enter real records after confirming school access permissions.</p></section><section id="tab-intake" class="panel hidden"><div class="row"><div><h2>New intake</h2><p class="muted">Students assigned to your class appear here. Open a student profile to review their record and attendance history.</p></div><span id="intakeCount" class="status">0 students</span></div><div id="intakeList" class="list"></div></section><section id="tab-fees" class="panel hidden">
 <div class="row"><div><h2>School fees</h2><p class="muted">Admin-only fee tracking. Record the amount due and how much each student has paid for a selected academic year and term.</p></div><span id="feeRecordCount" class="status">0 records</span></div>
 <div class="grid fee-kpis"><div class="report-kpi">Paid<strong id="feePaidCount">0</strong></div><div class="report-kpi">Part payments<strong id="feePartCount">0</strong></div><div class="report-kpi">Unpaid<strong id="feeUnpaidCount">0</strong></div><div class="report-kpi">Amount collected<strong id="feeCollected">₦0</strong></div></div>
 <form id="feeForm" class="grid" style="margin-top:20px"><h3 style="grid-column:1/-1;margin-bottom:0">Record or update school fees</h3>

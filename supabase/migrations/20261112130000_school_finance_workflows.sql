@@ -81,14 +81,24 @@ begin
   if auth.uid() is null then raise exception 'Authentication required'; end if;
   if length(trim(coalesce(p_reason,''))) < 5 then raise exception 'A clear reversal reason is required'; end if;
 
-  select * into v_payment from public.school_fee_payments
-  where id=p_payment_id for update;
+  -- Read the payment first without locking, then lock fee record before payment.
+  -- This matches the posting path's fee-record-first lock order.
+  select * into v_payment from public.school_fee_payments where id=p_payment_id;
   if not found then raise exception 'Payment not found'; end if;
   if v_payment.school_id <> public.schoolflow_my_school_id()
      or not public.schoolflow_has_finance_permission(v_payment.school_id,'finance.fees.record') then
     raise exception 'Not authorized to reverse this payment';
   end if;
-  if v_payment.status <> 'posted' then raise exception 'Only posted payments can be reversed'; end if;
+
+  perform 1 from public.school_fee_records
+    where id=v_payment.fee_record_id and school_id=v_payment.school_id for update;
+  if not found then raise exception 'Fee record not found'; end if;
+
+  select * into v_payment from public.school_fee_payments
+    where id=p_payment_id for update;
+  if not found or v_payment.status <> 'posted' then
+    raise exception 'Only posted payments can be reversed';
+  end if;
 
   update public.school_fee_records
     set amount_paid = greatest(0,coalesce(amount_paid,0)-v_payment.amount), updated_at=now()
@@ -275,19 +285,24 @@ declare
 begin
   if auth.uid() is null then raise exception 'Authentication required'; end if;
   if length(trim(coalesce(p_reason,''))) < 5 then raise exception 'A clear reversal reason is required'; end if;
-  select * into v_payment from public.school_salary_payments
-    where id=p_payment_id for update;
+  -- Match salary posting's salary-record-first lock order.
+  select * into v_payment from public.school_salary_payments where id=p_payment_id;
   if not found then raise exception 'Salary payment not found'; end if;
   if v_payment.school_id <> public.schoolflow_my_school_id()
      or not public.schoolflow_has_finance_permission(v_payment.school_id,'finance.payroll.payments.approve') then
     raise exception 'Not authorized to reverse salary payments';
   end if;
-  if v_payment.status <> 'posted' then raise exception 'Only posted payments can be reversed'; end if;
+  select * into v_salary from public.school_salary_records
+    where id=v_payment.salary_record_id and school_id=v_payment.school_id for update;
+  if not found then raise exception 'Salary record not found'; end if;
+  select * into v_payment from public.school_salary_payments
+    where id=p_payment_id for update;
+  if not found or v_payment.status <> 'posted' then
+    raise exception 'Only posted payments can be reversed';
+  end if;
   update public.school_salary_payments
     set status='reversed',reversed_at=now(),reversed_by=auth.uid(),reversal_reason=trim(p_reason)
   where id=p_payment_id;
-  select * into v_salary from public.school_salary_records
-    where id=v_payment.salary_record_id for update;
   select coalesce(sum(amount),0) into v_total
   from public.school_salary_payments
   where salary_record_id=v_payment.salary_record_id and status='posted';

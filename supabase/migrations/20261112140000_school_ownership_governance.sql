@@ -25,6 +25,34 @@ create table if not exists public.school_ownership_history (
 
 create unique index if not exists school_ownership_one_current_owner_uidx
   on public.school_ownership_history(school_id) where is_current;
+
+-- School setup creates the school row first, then its first admin profile in
+-- the same transaction. Seed ownership when that matching creator profile
+-- arrives; this also covers a creator profile restored after migration.
+create or replace function public.schoolflow_seed_school_owner_on_profile_insert()
+returns trigger
+language plpgsql security definer
+set search_path = public, pg_temp
+as $
+begin
+  if new.role = 'admin' and exists (
+    select 1 from public.schools s
+    where s.id = new.school_id and s.created_by = new.id
+  ) then
+    insert into public.school_ownership_history
+      (school_id, owner_user_id, is_current, approved_by, transfer_reason)
+    values
+      (new.school_id, new.id, true, new.id, 'Initial owner seeded during school setup')
+    on conflict do nothing;
+  end if;
+  return new;
+end;
+$;
+
+drop trigger if exists schoolflow_seed_school_owner_after_profile_insert on public.profiles;
+create trigger schoolflow_seed_school_owner_after_profile_insert
+after insert on public.profiles
+for each row execute function public.schoolflow_seed_school_owner_on_profile_insert();
 create index if not exists school_ownership_history_school_idx
   on public.school_ownership_history(school_id, effective_from desc);
 
@@ -65,7 +93,7 @@ language plpgsql security definer
 set search_path = public, pg_temp
 as $$
 declare
-  v_new_owner_id uuid;
+  v_new_owner_history_id uuid;
   v_old_owner_id uuid;
 begin
   if auth.uid() is null then
@@ -110,18 +138,18 @@ begin
     (school_id, owner_user_id, is_current, effective_from, approved_by, transfer_reason)
   values
     (p_school_id, v_new_owner_id, true, now(), auth.uid(), trim(p_reason))
-  returning id into v_new_owner_id;
+  returning id into v_new_owner_history_id;
 
   insert into public.school_finance_audit_log
     (school_id, actor_user_id, action, entity_type, entity_id, details, reason)
   values
     (p_school_id, auth.uid(), 'school.ownership_transferred', 'school_ownership',
-     v_new_owner_id,
+     v_new_owner_history_id,
      jsonb_build_object('previous_owner_user_id',v_old_owner_id,
                         'new_owner_user_id',p_new_owner_user_id),
      trim(p_reason));
 
-  return v_new_owner_id;
+  return p_new_owner_user_id;
 end;
 $$;
 
@@ -134,6 +162,8 @@ revoke all on public.school_ownership_history from anon, authenticated;
 grant select on public.school_ownership_history to authenticated;
 revoke all on function public.schoolflow_transfer_school_ownership(uuid,uuid,text)
   from public, anon;
+revoke all on function public.schoolflow_seed_school_owner_on_profile_insert()
+  from public, anon, authenticated;
 grant execute on function public.schoolflow_transfer_school_ownership(uuid,uuid,text)
   to authenticated;
 

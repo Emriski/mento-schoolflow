@@ -228,7 +228,7 @@ create or replace function public.schoolflow_record_salary_payment(
   p_reference text default null, p_note text default null, p_paid_at timestamptz default now()
 ) returns uuid
 language plpgsql security definer set search_path = public, pg_temp
-as $
+as $ 
 declare
   v_salary public.school_salary_records%rowtype;
   v_total numeric(14,2);
@@ -277,7 +277,7 @@ create or replace function public.schoolflow_reverse_salary_payment(
   p_payment_id uuid, p_reason text
 ) returns void
 language plpgsql security definer set search_path = public, pg_temp
-as $
+as $ 
 declare
   v_payment public.school_salary_payments%rowtype;
   v_salary public.school_salary_records%rowtype;
@@ -320,7 +320,7 @@ create or replace function public.schoolflow_void_income_record(
   p_income_id uuid, p_reason text
 ) returns void
 language plpgsql security definer set search_path = public, pg_temp
-as $
+as $ 
 declare
   v_income public.school_income_records%rowtype;
 begin

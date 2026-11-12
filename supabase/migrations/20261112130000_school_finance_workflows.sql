@@ -212,4 +212,128 @@ grant execute on function public.schoolflow_reverse_fee_payment(uuid,text) to au
 grant execute on function public.schoolflow_transition_expense(uuid,text,text,text) to authenticated;
 grant execute on function public.schoolflow_revoke_finance_permission(uuid,text) to authenticated;
 
+
+create or replace function public.schoolflow_record_salary_payment(
+  p_salary_record_id uuid, p_amount numeric, p_payment_method text default 'other',
+  p_reference text default null, p_note text default null, p_paid_at timestamptz default now()
+) returns uuid
+language plpgsql security definer set search_path = public, pg_temp
+as $
+declare
+  v_salary public.school_salary_records%rowtype;
+  v_total numeric(14,2);
+  v_payment_id uuid;
+begin
+  if auth.uid() is null then raise exception 'Authentication required'; end if;
+  if p_amount is null or p_amount <= 0 then raise exception 'Payment amount must be greater than zero'; end if;
+  select * into v_salary from public.school_salary_records
+    where id=p_salary_record_id for update;
+  if not found then raise exception 'Salary record not found'; end if;
+  if v_salary.school_id <> public.schoolflow_my_school_id()
+     or not public.schoolflow_has_finance_permission(v_salary.school_id,'finance.payroll.payments.record') then
+    raise exception 'Not authorized to record salary payments';
+  end if;
+  if v_salary.status='void' then raise exception 'Cannot pay a void salary record'; end if;
+  if p_payment_method not in ('cash','bank_transfer','pos','online','cheque','other') then
+    raise exception 'Invalid payment method';
+  end if;
+  select coalesce(sum(amount),0) into v_total
+  from public.school_salary_payments
+  where salary_record_id=p_salary_record_id and status='posted';
+  if v_total+p_amount > v_salary.net_amount then
+    raise exception 'Payment exceeds the remaining net salary';
+  end if;
+  insert into public.school_salary_payments
+    (school_id,salary_record_id,amount,paid_at,payment_method,reference,note,recorded_by)
+  values
+    (v_salary.school_id,p_salary_record_id,p_amount,coalesce(p_paid_at,now()),
+     p_payment_method,p_reference,p_note,auth.uid())
+  returning id into v_payment_id;
+  select coalesce(sum(amount),0) into v_total
+  from public.school_salary_payments
+  where salary_record_id=p_salary_record_id and status='posted';
+  update public.school_salary_records
+    set status=case when v_total >= net_amount then 'paid' else 'open' end
+  where id=p_salary_record_id;
+  perform public.schoolflow_finance_audit(
+    v_salary.school_id,'salary_payment.recorded','salary_payment',v_payment_id,
+    jsonb_build_object('salary_record_id',p_salary_record_id,'amount',p_amount)
+  );
+  return v_payment_id;
+end;
+$;
+
+create or replace function public.schoolflow_reverse_salary_payment(
+  p_payment_id uuid, p_reason text
+) returns void
+language plpgsql security definer set search_path = public, pg_temp
+as $
+declare
+  v_payment public.school_salary_payments%rowtype;
+  v_salary public.school_salary_records%rowtype;
+  v_total numeric(14,2);
+begin
+  if auth.uid() is null then raise exception 'Authentication required'; end if;
+  if length(trim(coalesce(p_reason,''))) < 5 then raise exception 'A clear reversal reason is required'; end if;
+  select * into v_payment from public.school_salary_payments
+    where id=p_payment_id for update;
+  if not found then raise exception 'Salary payment not found'; end if;
+  if v_payment.school_id <> public.schoolflow_my_school_id()
+     or not public.schoolflow_has_finance_permission(v_payment.school_id,'finance.payroll.payments.approve') then
+    raise exception 'Not authorized to reverse salary payments';
+  end if;
+  if v_payment.status <> 'posted' then raise exception 'Only posted payments can be reversed'; end if;
+  update public.school_salary_payments
+    set status='reversed',reversed_at=now(),reversed_by=auth.uid(),reversal_reason=trim(p_reason)
+  where id=p_payment_id;
+  select * into v_salary from public.school_salary_records
+    where id=v_payment.salary_record_id for update;
+  select coalesce(sum(amount),0) into v_total
+  from public.school_salary_payments
+  where salary_record_id=v_payment.salary_record_id and status='posted';
+  update public.school_salary_records
+    set status=case when v_total >= net_amount then 'paid' else 'open' end
+  where id=v_payment.salary_record_id;
+  perform public.schoolflow_finance_audit(
+    v_payment.school_id,'salary_payment.reversed','salary_payment',p_payment_id,
+    jsonb_build_object('amount',v_payment.amount),trim(p_reason)
+  );
+end;
+$;
+
+create or replace function public.schoolflow_void_income_record(
+  p_income_id uuid, p_reason text
+) returns void
+language plpgsql security definer set search_path = public, pg_temp
+as $
+declare
+  v_income public.school_income_records%rowtype;
+begin
+  if auth.uid() is null then raise exception 'Authentication required'; end if;
+  if length(trim(coalesce(p_reason,''))) < 5 then raise exception 'A clear void reason is required'; end if;
+  select * into v_income from public.school_income_records where id=p_income_id for update;
+  if not found then raise exception 'Income record not found'; end if;
+  if v_income.school_id <> public.schoolflow_my_school_id()
+     or not public.schoolflow_has_finance_permission(v_income.school_id,'finance.income.record') then
+    raise exception 'Not authorized to void this income record';
+  end if;
+  if v_income.status <> 'posted' then raise exception 'Only posted income can be voided'; end if;
+  update public.school_income_records
+    set status='void',voided_at=now(),voided_by=auth.uid(),void_reason=trim(p_reason)
+  where id=p_income_id;
+  perform public.schoolflow_finance_audit(
+    v_income.school_id,'income.voided','income',p_income_id,
+    jsonb_build_object('amount',v_income.amount,'category',v_income.category),trim(p_reason)
+  );
+end;
+$;
+
+revoke all on function public.schoolflow_record_salary_payment(uuid,numeric,text,text,text,timestamptz) from public, anon;
+revoke all on function public.schoolflow_reverse_salary_payment(uuid,text) from public, anon;
+revoke all on function public.schoolflow_void_income_record(uuid,text) from public, anon;
+grant execute on function public.schoolflow_record_salary_payment(uuid,numeric,text,text,text,timestamptz) to authenticated;
+grant execute on function public.schoolflow_reverse_salary_payment(uuid,text) to authenticated;
+grant execute on function public.schoolflow_void_income_record(uuid,text) to authenticated;
+
+
 commit;

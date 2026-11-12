@@ -31,7 +31,6 @@ create table if not exists public.school_finance_permissions (
   revoked_by uuid references public.profiles(id),
   constraint school_finance_permissions_user_school_fk
     foreign key (user_id, school_id) references public.profiles(id, school_id)
-    deferrable initially immediate
 );
 
 -- Composite FK is backed by the unique index created before this table.
@@ -57,6 +56,8 @@ create table if not exists public.school_fee_payments (
   reversed_by uuid references public.profiles(id),
   reversal_reason text,
   created_at timestamptz not null default now(),
+  constraint school_fee_payments_record_school_fk foreign key (fee_record_id, school_id)
+    references public.school_fee_records(id, school_id),
   constraint school_fee_payments_reversal_check check (
     (status='posted' and reversed_at is null and reversed_by is null and reversal_reason is null)
     or (status='reversed' and reversed_at is not null and reversed_by is not null and length(trim(coalesce(reversal_reason,'')))>0)
@@ -129,7 +130,8 @@ create table if not exists public.school_salary_records (
   check (pay_period_end >= pay_period_start),
   check (deductions <= gross_amount),
   constraint school_salary_staff_school_fk
-    foreign key (staff_user_id,school_id) references public.profiles(id,school_id)
+    foreign key (staff_user_id,school_id) references public.profiles(id,school_id),
+  constraint school_salary_records_id_school_uidx unique (id, school_id)
 );
 create index if not exists school_salary_records_period_idx on public.school_salary_records(school_id,pay_period_end desc);
 
@@ -149,6 +151,8 @@ create table if not exists public.school_salary_payments (
   reversed_by uuid references public.profiles(id),
   reversal_reason text,
   created_at timestamptz not null default now(),
+  constraint school_salary_payments_record_school_fk foreign key (salary_record_id, school_id)
+    references public.school_salary_records(id, school_id),
   check ((status='posted' and reversed_at is null and reversed_by is null and reversal_reason is null)
       or (status='reversed' and reversed_at is not null and reversed_by is not null and length(trim(coalesce(reversal_reason,'')))>0))
 );
@@ -212,11 +216,7 @@ create policy finance_permissions_owner_insert on public.school_finance_permissi
     and granted_by=auth.uid()
     and exists(select 1 from public.profiles p where p.id=school_finance_permissions.user_id and p.school_id=school_finance_permissions.school_id and p.role='admin')
   );
-create policy finance_permissions_owner_update on public.school_finance_permissions
-  for update using (public.schoolflow_is_finance_owner(school_id))
-  with check (public.schoolflow_is_finance_owner(school_id));
-create policy finance_permissions_owner_delete on public.school_finance_permissions
-  for delete using (public.schoolflow_is_finance_owner(school_id));
+-- Grant revocation will be handled by a narrowly scoped database function; no direct update/delete.
 
 alter table public.school_fee_payments enable row level security;
 create policy finance_fee_payments_read on public.school_fee_payments for select
@@ -224,7 +224,7 @@ create policy finance_fee_payments_read on public.school_fee_payments for select
 create policy finance_fee_payments_insert on public.school_fee_payments for insert
   with check (school_id=public.schoolflow_my_school_id() and received_by=auth.uid()
     and public.schoolflow_has_finance_permission(school_id,'finance.fees.record')
-    and exists(select 1 from public.school_fee_records fr where fr.id=fee_record_id and fr.school_id=school_id));
+    and exists(select 1 from public.school_fee_records fr where fr.id=school_fee_payments.fee_record_id and fr.school_id=school_fee_payments.school_id));
 
 alter table public.school_income_records enable row level security;
 create policy finance_income_read on public.school_income_records for select
@@ -242,12 +242,7 @@ create policy finance_expenses_read on public.school_expenses for select
 create policy finance_expenses_insert on public.school_expenses for insert
   with check (school_id=public.schoolflow_my_school_id() and requested_by=auth.uid()
     and public.schoolflow_has_finance_permission(school_id,'finance.expenses.record'));
-create policy finance_expenses_update on public.school_expenses for update
-  using (school_id=public.schoolflow_my_school_id() and (
-    public.schoolflow_has_finance_permission(school_id,'finance.expenses.approve')
-    or (requested_by=auth.uid() and status in ('draft','submitted'))
-  ))
-  with check (school_id=public.schoolflow_my_school_id());
+-- Expense state changes will be performed through validated workflow functions only.
 
 alter table public.school_salary_records enable row level security;
 create policy finance_salary_records_read on public.school_salary_records for select

@@ -8,7 +8,7 @@ create or replace function public.schoolflow_finance_audit(
   p_details jsonb default '{}'::jsonb, p_reason text default null
 ) returns void
 language plpgsql security definer set search_path = public, pg_temp
-as $$
+as $$$
 begin
   insert into public.school_finance_audit_log
     (school_id, actor_user_id, action, entity_type, entity_id, details, reason)
@@ -23,7 +23,7 @@ create or replace function public.schoolflow_record_fee_payment(
   p_reference text default null, p_note text default null, p_paid_at timestamptz default now()
 ) returns uuid
 language plpgsql security definer set search_path = public, pg_temp
-as $$
+as $$$
 declare
   v_school_id uuid;
   v_payment_id uuid;
@@ -74,7 +74,7 @@ create or replace function public.schoolflow_reverse_fee_payment(
   p_payment_id uuid, p_reason text
 ) returns void
 language plpgsql security definer set search_path = public, pg_temp
-as $$
+as $$$
 declare
   v_payment public.school_fee_payments%rowtype;
 begin
@@ -120,7 +120,7 @@ create or replace function public.schoolflow_transition_expense(
   p_payment_reference text default null
 ) returns void
 language plpgsql security definer set search_path = public, pg_temp
-as $$
+as $$$
 declare
   v_expense public.school_expenses%rowtype;
   v_permission text;
@@ -186,7 +186,7 @@ create or replace function public.schoolflow_revoke_finance_permission(
   p_permission_id uuid, p_reason text default null
 ) returns void
 language plpgsql security definer set search_path = public, pg_temp
-as $$
+as $$$
 declare
   v_permission public.school_finance_permissions%rowtype;
 begin
@@ -228,7 +228,7 @@ create or replace function public.schoolflow_record_salary_payment(
   p_reference text default null, p_note text default null, p_paid_at timestamptz default now()
 ) returns uuid
 language plpgsql security definer set search_path = public, pg_temp
-as $
+as $$
 declare
   v_salary public.school_salary_records%rowtype;
   v_total numeric(14,2);
@@ -271,12 +271,12 @@ begin
   );
   return v_payment_id;
 end;
-$;
+$$;
 create or replace function public.schoolflow_reverse_salary_payment(
   p_payment_id uuid, p_reason text
 ) returns void
 language plpgsql security definer set search_path = public, pg_temp
-as $
+as $$
 declare
   v_payment public.school_salary_payments%rowtype;
   v_salary public.school_salary_records%rowtype;
@@ -313,12 +313,12 @@ begin
     jsonb_build_object('amount',v_payment.amount),trim(p_reason)
   );
 end;
-$;
+$$;
 create or replace function public.schoolflow_void_income_record(
   p_income_id uuid, p_reason text
 ) returns void
 language plpgsql security definer set search_path = public, pg_temp
-as $
+as $$
 declare
   v_income public.school_income_records%rowtype;
 begin
@@ -339,7 +339,7 @@ begin
     jsonb_build_object('amount',v_income.amount,'category',v_income.category),trim(p_reason)
   );
 end;
-$;
+$$;
 revoke all on function public.schoolflow_record_salary_payment(uuid,numeric,text,text,text,timestamptz) from public, anon;
 revoke all on function public.schoolflow_reverse_salary_payment(uuid,text) from public, anon;
 revoke all on function public.schoolflow_void_income_record(uuid,text) from public, anon;

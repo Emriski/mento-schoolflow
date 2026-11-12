@@ -10,6 +10,8 @@ alter table public.schools
   add constraint schools_currency_code_format
     check (currency_code ~ '^[A-Z]{3}$') not valid;
 
+create unique index if not exists profiles_id_school_id_uidx on public.profiles(id, school_id);
+
 create table if not exists public.school_finance_permissions (
   id uuid primary key default gen_random_uuid(),
   school_id uuid not null references public.schools(id) on delete cascade,
@@ -32,8 +34,7 @@ create table if not exists public.school_finance_permissions (
     deferrable initially immediate
 );
 
--- Composite FK above requires a matching unique key; add it without changing existing row data.
-create unique index if not exists profiles_id_school_id_uidx on public.profiles(id, school_id);
+-- Composite FK is backed by the unique index created before this table.
 create unique index if not exists school_finance_permissions_active_uidx
   on public.school_finance_permissions(school_id,user_id,permission_key)
   where revoked_at is null;
@@ -209,7 +210,7 @@ create policy finance_permissions_owner_insert on public.school_finance_permissi
   for insert with check (
     public.schoolflow_is_finance_owner(school_id)
     and granted_by=auth.uid()
-    and exists(select 1 from public.profiles p where p.id=user_id and p.school_id=school_id and p.role='admin')
+    and exists(select 1 from public.profiles p where p.id=school_finance_permissions.user_id and p.school_id=school_finance_permissions.school_id and p.role='admin')
   );
 create policy finance_permissions_owner_update on public.school_finance_permissions
   for update using (public.schoolflow_is_finance_owner(school_id))

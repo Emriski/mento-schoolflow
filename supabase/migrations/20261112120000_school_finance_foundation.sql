@@ -40,6 +40,10 @@ create unique index if not exists school_finance_permissions_active_uidx
 create index if not exists school_finance_permissions_user_idx
   on public.school_finance_permissions(user_id,school_id) where revoked_at is null;
 
+-- Required target key for enforcing same-school fee/payment relationships.
+create unique index if not exists school_fee_records_id_school_uidx
+  on public.school_fee_records(id, school_id);
+
 create table if not exists public.school_fee_payments (
   id uuid primary key default gen_random_uuid(),
   school_id uuid not null references public.schools(id),

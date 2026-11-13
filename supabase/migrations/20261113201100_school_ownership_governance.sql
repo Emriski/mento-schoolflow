@@ -33,7 +33,7 @@ create or replace function public.schoolflow_seed_school_owner_on_profile_insert
 returns trigger
 language plpgsql security definer
 set search_path = public, pg_temp
-as $
+as $$
 begin
   if new.role = 'admin' and exists (
     select 1 from public.schools s
@@ -47,7 +47,7 @@ begin
   end if;
   return new;
 end;
-$;
+$$;
 
 drop trigger if exists schoolflow_seed_school_owner_after_profile_insert on public.profiles;
 create trigger schoolflow_seed_school_owner_after_profile_insert

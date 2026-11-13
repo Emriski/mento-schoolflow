@@ -6,14 +6,17 @@ begin;
 
 -- Core application tables and constraints
 
-CREATE TABLE public.schools (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
+CREATE TABLE public.schools (
+  id uuid DEFAULT gen_random_uuid() NOT NULL,
   name text NOT NULL,
   created_by uuid,
   created_at timestamp with time zone DEFAULT now() NOT NULL,
   CONSTRAINT schools_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL,
-  CONSTRAINT schools_pkey PRIMARY KEY (id)\n);
+  CONSTRAINT schools_pkey PRIMARY KEY (id)
+);
 
-CREATE TABLE public.profiles (\n  id uuid NOT NULL,
+CREATE TABLE public.profiles (
+  id uuid NOT NULL,
   school_id uuid NOT NULL,
   full_name text NOT NULL,
   role text NOT NULL,
@@ -21,9 +24,11 @@ CREATE TABLE public.profiles (\n  id uuid NOT NULL,
   CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE,
   CONSTRAINT profiles_pkey PRIMARY KEY (id),
   CONSTRAINT profiles_role_check CHECK ((role = ANY (ARRAY['admin'::text, 'head_teacher'::text, 'teacher'::text]))),
-  CONSTRAINT profiles_school_id_fkey FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE\n);
+  CONSTRAINT profiles_school_id_fkey FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE
+);
 
-CREATE TABLE public.classes (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
+CREATE TABLE public.classes (
+  id uuid DEFAULT gen_random_uuid() NOT NULL,
   school_id uuid NOT NULL,
   name text NOT NULL,
   teacher_id uuid,
@@ -31,9 +36,11 @@ CREATE TABLE public.classes (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
   CONSTRAINT classes_pkey PRIMARY KEY (id),
   CONSTRAINT classes_school_id_fkey FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE,
   CONSTRAINT classes_school_id_name_key UNIQUE (school_id, name),
-  CONSTRAINT classes_teacher_id_fkey FOREIGN KEY (teacher_id) REFERENCES profiles(id) ON DELETE SET NULL\n);
+  CONSTRAINT classes_teacher_id_fkey FOREIGN KEY (teacher_id) REFERENCES profiles(id) ON DELETE SET NULL
+);
 
-CREATE TABLE public.students (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
+CREATE TABLE public.students (
+  id uuid DEFAULT gen_random_uuid() NOT NULL,
   school_id uuid NOT NULL,
   class_id uuid NOT NULL,
   full_name text NOT NULL,
@@ -46,9 +53,11 @@ CREATE TABLE public.students (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
   CONSTRAINT students_class_id_fkey FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
   CONSTRAINT students_class_id_student_code_key UNIQUE (class_id, student_code),
   CONSTRAINT students_pkey PRIMARY KEY (id),
-  CONSTRAINT students_school_id_fkey FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE\n);
+  CONSTRAINT students_school_id_fkey FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE
+);
 
-CREATE TABLE public.attendance_sessions (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
+CREATE TABLE public.attendance_sessions (
+  id uuid DEFAULT gen_random_uuid() NOT NULL,
   school_id uuid NOT NULL,
   class_id uuid NOT NULL,
   attendance_date date DEFAULT CURRENT_DATE NOT NULL,
@@ -61,9 +70,11 @@ CREATE TABLE public.attendance_sessions (\n  id uuid DEFAULT gen_random_uuid() N
   CONSTRAINT attendance_sessions_marked_by_fkey FOREIGN KEY (marked_by) REFERENCES profiles(id),
   CONSTRAINT attendance_sessions_pkey PRIMARY KEY (id),
   CONSTRAINT attendance_sessions_school_id_fkey FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE,
-  CONSTRAINT attendance_sessions_status_check CHECK ((status = ANY (ARRAY['draft'::text, 'submitted'::text])))\n);
+  CONSTRAINT attendance_sessions_status_check CHECK ((status = ANY (ARRAY['draft'::text, 'submitted'::text])))
+);
 
-CREATE TABLE public.attendance_records (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
+CREATE TABLE public.attendance_records (
+  id uuid DEFAULT gen_random_uuid() NOT NULL,
   session_id uuid NOT NULL,
   student_id uuid NOT NULL,
   status text NOT NULL,
@@ -74,9 +85,11 @@ CREATE TABLE public.attendance_records (\n  id uuid DEFAULT gen_random_uuid() NO
   CONSTRAINT attendance_records_session_id_fkey FOREIGN KEY (session_id) REFERENCES attendance_sessions(id) ON DELETE CASCADE,
   CONSTRAINT attendance_records_session_id_student_id_key UNIQUE (session_id, student_id),
   CONSTRAINT attendance_records_status_check CHECK ((status = ANY (ARRAY['present'::text, 'late'::text, 'absent'::text]))),
-  CONSTRAINT attendance_records_student_id_fkey FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE\n);
+  CONSTRAINT attendance_records_student_id_fkey FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+);
 
-CREATE TABLE public.school_invites (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
+CREATE TABLE public.school_invites (
+  id uuid DEFAULT gen_random_uuid() NOT NULL,
   school_id uuid NOT NULL,
   email text NOT NULL,
   role text NOT NULL,
@@ -89,9 +102,11 @@ CREATE TABLE public.school_invites (\n  id uuid DEFAULT gen_random_uuid() NOT NU
   CONSTRAINT school_invites_pkey PRIMARY KEY (id),
   CONSTRAINT school_invites_role_check CHECK ((role = ANY (ARRAY['head_teacher'::text, 'teacher'::text, 'admin'::text, 'parent'::text]))),
   CONSTRAINT school_invites_school_id_email_key UNIQUE (school_id, email),
-  CONSTRAINT school_invites_school_id_fkey FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE\n);
+  CONSTRAINT school_invites_school_id_fkey FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE
+);
 
-CREATE TABLE public.student_guardians (\n  student_id uuid NOT NULL,
+CREATE TABLE public.student_guardians (
+  student_id uuid NOT NULL,
   school_id uuid NOT NULL,
   date_of_birth date,
   guardian_name text NOT NULL,
@@ -102,9 +117,11 @@ CREATE TABLE public.student_guardians (\n  student_id uuid NOT NULL,
   CONSTRAINT student_guardians_guardian_user_id_fkey FOREIGN KEY (guardian_user_id) REFERENCES auth.users(id) ON DELETE SET NULL,
   CONSTRAINT student_guardians_pkey PRIMARY KEY (student_id),
   CONSTRAINT student_guardians_school_id_fkey FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE,
-  CONSTRAINT student_guardians_student_id_fkey FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE\n);
+  CONSTRAINT student_guardians_student_id_fkey FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+);
 
-CREATE TABLE public.school_fee_records (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
+CREATE TABLE public.school_fee_records (
+  id uuid DEFAULT gen_random_uuid() NOT NULL,
   school_id uuid NOT NULL,
   student_id uuid NOT NULL,
   academic_year text NOT NULL,
@@ -128,9 +145,11 @@ END) STORED,
   CONSTRAINT school_fee_records_school_id_fkey FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE,
   CONSTRAINT school_fee_records_student_id_academic_year_term_key UNIQUE (student_id, academic_year, term),
   CONSTRAINT school_fee_records_student_id_fkey FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
-  CONSTRAINT school_fee_records_term_check CHECK ((term = ANY (ARRAY['First Term'::text, 'Second Term'::text, 'Third Term'::text])))\n);
+  CONSTRAINT school_fee_records_term_check CHECK ((term = ANY (ARRAY['First Term'::text, 'Second Term'::text, 'Third Term'::text])))
+);
 
-CREATE TABLE public.student_results (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
+CREATE TABLE public.student_results (
+  id uuid DEFAULT gen_random_uuid() NOT NULL,
   school_id uuid NOT NULL,
   class_id uuid NOT NULL,
   student_id uuid NOT NULL,
@@ -170,9 +189,11 @@ END) STORED,
   CONSTRAINT student_results_student_id_fkey FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
   CONSTRAINT student_results_subject_check CHECK (((char_length(TRIM(BOTH FROM subject)) >= 1) AND (char_length(TRIM(BOTH FROM subject)) <= 100))),
   CONSTRAINT student_results_term_check CHECK ((term = ANY (ARRAY['First Term'::text, 'Second Term'::text, 'Third Term'::text]))),
-  CONSTRAINT student_results_unique_subject_term UNIQUE (student_id, academic_year, term, subject)\n);
+  CONSTRAINT student_results_unique_subject_term UNIQUE (student_id, academic_year, term, subject)
+);
 
-CREATE TABLE public.school_conversations (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
+CREATE TABLE public.school_conversations (
+  id uuid DEFAULT gen_random_uuid() NOT NULL,
   school_id uuid NOT NULL,
   student_id uuid,
   conversation_type text NOT NULL,
@@ -185,9 +206,11 @@ CREATE TABLE public.school_conversations (\n  id uuid DEFAULT gen_random_uuid() 
   CONSTRAINT school_conversations_pkey PRIMARY KEY (id),
   CONSTRAINT school_conversations_school_id_fkey FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE,
   CONSTRAINT school_conversations_student_id_fkey FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE SET NULL,
-  CONSTRAINT school_conversations_subject_check CHECK (((char_length(TRIM(BOTH FROM subject)) >= 1) AND (char_length(TRIM(BOTH FROM subject)) <= 120)))\n);
+  CONSTRAINT school_conversations_subject_check CHECK (((char_length(TRIM(BOTH FROM subject)) >= 1) AND (char_length(TRIM(BOTH FROM subject)) <= 120)))
+);
 
-CREATE TABLE public.school_conversation_participants (\n  conversation_id uuid NOT NULL,
+CREATE TABLE public.school_conversation_participants (
+  conversation_id uuid NOT NULL,
   user_id uuid NOT NULL,
   participant_role text NOT NULL,
   joined_at timestamp with time zone DEFAULT now() NOT NULL,
@@ -195,9 +218,11 @@ CREATE TABLE public.school_conversation_participants (\n  conversation_id uuid N
   CONSTRAINT school_conversation_participants_conversation_id_fkey FOREIGN KEY (conversation_id) REFERENCES school_conversations(id) ON DELETE CASCADE,
   CONSTRAINT school_conversation_participants_participant_role_check CHECK ((participant_role = ANY (ARRAY['parent'::text, 'teacher'::text, 'admin'::text, 'head_teacher'::text]))),
   CONSTRAINT school_conversation_participants_pkey PRIMARY KEY (conversation_id, user_id),
-  CONSTRAINT school_conversation_participants_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE\n);
+  CONSTRAINT school_conversation_participants_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
+);
 
-CREATE TABLE public.school_messages (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
+CREATE TABLE public.school_messages (
+  id uuid DEFAULT gen_random_uuid() NOT NULL,
   conversation_id uuid NOT NULL,
   sender_id uuid NOT NULL,
   client_message_id uuid NOT NULL,
@@ -207,7 +232,8 @@ CREATE TABLE public.school_messages (\n  id uuid DEFAULT gen_random_uuid() NOT N
   CONSTRAINT school_messages_conversation_id_fkey FOREIGN KEY (conversation_id) REFERENCES school_conversations(id) ON DELETE CASCADE,
   CONSTRAINT school_messages_pkey PRIMARY KEY (id),
   CONSTRAINT school_messages_sender_id_client_message_id_key UNIQUE (sender_id, client_message_id),
-  CONSTRAINT school_messages_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES auth.users(id)\n);
+  CONSTRAINT school_messages_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES auth.users(id)
+);
 
 -- Supporting indexes
 
@@ -302,7 +328,7 @@ CREATE OR REPLACE FUNCTION public.schoolflow_my_role()
  LANGUAGE sql
  STABLE SECURITY DEFINER
  SET search_path TO 'public'
-AS $function$ select role from public.profiles where id = auth.uid() limit 1 $function$
+AS $function$ select role from public.profiles where id = auth.uid() limit 1 $function$;
 
 
 CREATE OR REPLACE FUNCTION public.schoolflow_my_school_id()
@@ -310,14 +336,14 @@ CREATE OR REPLACE FUNCTION public.schoolflow_my_school_id()
  LANGUAGE sql
  STABLE SECURITY DEFINER
  SET search_path TO 'public'
-AS $function$ select school_id from public.profiles where id = auth.uid() limit 1 $function$
+AS $function$ select school_id from public.profiles where id = auth.uid() limit 1 $function$;
 
 
 CREATE OR REPLACE FUNCTION public.schoolflow_generate_student_code()
  RETURNS trigger
  LANGUAGE plpgsql
  SET search_path TO ''
-AS $function$ begin if new.student_code is null or btrim(new.student_code) = '' then new.student_code := 'SF-' || to_char(coalesce(new.admission_date, current_date), 'YYYY') || '-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 6)); end if; return new; end; $function$
+AS $function$ begin if new.student_code is null or btrim(new.student_code) = '' then new.student_code := 'SF-' || to_char(coalesce(new.admission_date, current_date), 'YYYY') || '-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 6)); end if; return new; end; $function$;
 
 
 CREATE OR REPLACE FUNCTION public.schoolflow_accept_invite(p_full_name text)
@@ -360,7 +386,7 @@ begin
   where id=v_inv.id;
   return jsonb_build_object('school_id',v_inv.school_id,'role',v_inv.role);
 end
-$function$
+$function$;
 
 
 CREATE OR REPLACE FUNCTION public.schoolflow_create_conversation(p_type text, p_student_id uuid, p_recipient_user_id uuid, p_subject text)
@@ -404,7 +430,7 @@ begin
  insert into public.school_conversation_participants(conversation_id,user_id,participant_role)
  values(v_conversation_id,v_uid,coalesce(v_caller_role,'parent')),(v_conversation_id,p_recipient_user_id,coalesce(v_recipient_role,'parent'));
  return v_conversation_id;
-end; $function$
+end; $function$;
 
 
 CREATE OR REPLACE FUNCTION public.schoolflow_create_invite(p_email text, p_role text)
@@ -412,7 +438,7 @@ CREATE OR REPLACE FUNCTION public.schoolflow_create_invite(p_email text, p_role 
  LANGUAGE plpgsql
  SECURITY DEFINER
  SET search_path TO 'public', 'auth'
-AS $function$ declare v_school uuid := public.schoolflow_my_school_id(); v_role text := public.schoolflow_my_role(); v_id uuid; begin if auth.uid() is null then raise exception 'Sign in first'; end if; if v_role not in ('admin','head_teacher') then raise exception 'Only school leadership can invite staff'; end if; if p_role not in ('teacher','head_teacher','admin') then raise exception 'Invalid staff role'; end if; if p_role = 'admin' and v_role <> 'admin' then raise exception 'Only an existing administrator can appoint another administrator'; end if; if coalesce(trim(p_email),'') = '' then raise exception 'Email is required'; end if; insert into public.school_invites(school_id,email,role,created_by) values(v_school,lower(trim(p_email)),p_role,auth.uid()) on conflict (school_id,email) do update set role=excluded.role, created_by=excluded.created_by, accepted_by=null, accepted_at=null returning id into v_id; return jsonb_build_object('invite_id',v_id,'email',lower(trim(p_email)),'role',p_role); end; $function$
+AS $function$ declare v_school uuid := public.schoolflow_my_school_id(); v_role text := public.schoolflow_my_role(); v_id uuid; begin if auth.uid() is null then raise exception 'Sign in first'; end if; if v_role not in ('admin','head_teacher') then raise exception 'Only school leadership can invite staff'; end if; if p_role not in ('teacher','head_teacher','admin') then raise exception 'Invalid staff role'; end if; if p_role = 'admin' and v_role <> 'admin' then raise exception 'Only an existing administrator can appoint another administrator'; end if; if coalesce(trim(p_email),'') = '' then raise exception 'Email is required'; end if; insert into public.school_invites(school_id,email,role,created_by) values(v_school,lower(trim(p_email)),p_role,auth.uid()) on conflict (school_id,email) do update set role=excluded.role, created_by=excluded.created_by, accepted_by=null, accepted_at=null returning id into v_id; return jsonb_build_object('invite_id',v_id,'email',lower(trim(p_email)),'role',p_role); end; $function$;
 
 
 CREATE OR REPLACE FUNCTION public.schoolflow_create_school_groups()
@@ -446,7 +472,7 @@ begin
  select v_staff,p.id,p.role from public.profiles p where p.school_id=v_school_id and p.role in ('admin','head_teacher','teacher')
  on conflict(conversation_id,user_id) do nothing;
  return query select v_community,v_staff;
-end; $function$
+end; $function$;
 
 
 CREATE OR REPLACE FUNCTION public.schoolflow_link_parent_account(p_student_id uuid, p_parent_email text)
@@ -454,7 +480,7 @@ CREATE OR REPLACE FUNCTION public.schoolflow_link_parent_account(p_student_id uu
  LANGUAGE plpgsql
  SECURITY DEFINER
  SET search_path TO ''
-AS $function$ declare v_school_id uuid; v_parent_user_id uuid; v_updated integer; begin if auth.uid() is null then raise exception 'You must be signed in.'; end if; select p.school_id into v_school_id from public.profiles p where p.id = auth.uid() and p.role in ('admin','head_teacher'); if v_school_id is null then raise exception 'Only a school administrator or head teacher can link parent accounts.'; end if; if p_parent_email is null or length(trim(p_parent_email)) = 0 then raise exception 'Enter the parent email address.'; end if; select u.id into v_parent_user_id from auth.users u where lower(u.email) = lower(trim(p_parent_email)) and u.email_confirmed_at is not null limit 1; if v_parent_user_id is null then raise exception 'No account with a confirmed email address was found. Ask the parent to create and confirm their account first.'; end if; if not exists (select 1 from public.students s where s.id = p_student_id and s.school_id = v_school_id) then raise exception 'Student not found in your school.'; end if; update public.student_guardians g set guardian_user_id = v_parent_user_id where g.student_id = p_student_id and g.school_id = v_school_id and lower(g.guardian_email) = lower(trim(p_parent_email)); get diagnostics v_updated = row_count; if v_updated = 0 then raise exception 'The parent email does not match a guardian contact recorded for this student.'; end if; return v_updated; end; $function$
+AS $function$ declare v_school_id uuid; v_parent_user_id uuid; v_updated integer; begin if auth.uid() is null then raise exception 'You must be signed in.'; end if; select p.school_id into v_school_id from public.profiles p where p.id = auth.uid() and p.role in ('admin','head_teacher'); if v_school_id is null then raise exception 'Only a school administrator or head teacher can link parent accounts.'; end if; if p_parent_email is null or length(trim(p_parent_email)) = 0 then raise exception 'Enter the parent email address.'; end if; select u.id into v_parent_user_id from auth.users u where lower(u.email) = lower(trim(p_parent_email)) and u.email_confirmed_at is not null limit 1; if v_parent_user_id is null then raise exception 'No account with a confirmed email address was found. Ask the parent to create and confirm their account first.'; end if; if not exists (select 1 from public.students s where s.id = p_student_id and s.school_id = v_school_id) then raise exception 'Student not found in your school.'; end if; update public.student_guardians g set guardian_user_id = v_parent_user_id where g.student_id = p_student_id and g.school_id = v_school_id and lower(g.guardian_email) = lower(trim(p_parent_email)); get diagnostics v_updated = row_count; if v_updated = 0 then raise exception 'The parent email does not match a guardian contact recorded for this student.'; end if; return v_updated; end; $function$;
 
 
 CREATE OR REPLACE FUNCTION public.schoolflow_parent_has_session(p_session_id uuid, p_school_id uuid)
@@ -473,7 +499,7 @@ AS $function$
       and g.school_id = p_school_id
       and g.guardian_user_id = (select auth.uid())
   );
-$function$
+$function$;
 
 
 CREATE OR REPLACE FUNCTION public.schoolflow_parent_linked_student(p_student_id uuid)
@@ -489,7 +515,7 @@ AS $function$
     where g.student_id = p_student_id
       and g.guardian_user_id = (select auth.uid())
   );
-$function$
+$function$;
 
 
 CREATE OR REPLACE FUNCTION public.schoolflow_parent_linked_student(p_student_id uuid, p_school_id uuid)
@@ -497,7 +523,7 @@ CREATE OR REPLACE FUNCTION public.schoolflow_parent_linked_student(p_student_id 
  LANGUAGE sql
  STABLE SECURITY DEFINER
  SET search_path TO 'public', 'pg_temp'
-AS $function$ select exists(select 1 from public.student_guardians g where g.student_id=p_student_id and g.school_id=p_school_id and g.guardian_user_id=(select auth.uid())); $function$
+AS $function$ select exists(select 1 from public.student_guardians g where g.student_id=p_student_id and g.school_id=p_school_id and g.guardian_user_id=(select auth.uid())); $function$;
 
 
 CREATE OR REPLACE FUNCTION public.schoolflow_parent_message_recipients(p_role text)
@@ -528,7 +554,7 @@ begin
   where p.school_id = v_school_id and p.role = p_role
   order by p.full_name;
 end;
-$function$
+$function$;
 
 
 CREATE OR REPLACE FUNCTION public.schoolflow_review_admission(p_student_id uuid, p_decision text)
@@ -547,7 +573,7 @@ begin
  get diagnostics v_updated = row_count;
  if v_updated=0 then raise exception 'Pending admission not found in your school, or it has already been reviewed'; end if;
  return jsonb_build_object('student_id',p_student_id,'decision',p_decision,'updated',v_updated);
-end; $function$
+end; $function$;
 
 
 CREATE OR REPLACE FUNCTION public.schoolflow_setup_school(p_school_name text, p_full_name text)
@@ -590,7 +616,7 @@ begin
   values(v_uid, v_school, trim(p_full_name), 'admin');
   return jsonb_build_object('school_id', v_school, 'role', 'admin');
 end
-$function$
+$function$;
 
 
 CREATE OR REPLACE FUNCTION public.schoolflow_staff_can_access_attendance(p_session_id uuid, p_student_id uuid)
@@ -605,7 +631,7 @@ AS $function$ select exists(
  where s.id=p_session_id and s.school_id=public.schoolflow_my_school_id()
  and st.school_id=s.school_id and st.class_id=c.id
  and ((public.schoolflow_my_role() = any(array['admin','head_teacher'])) or c.teacher_id=(select auth.uid()))
-); $function$
+); $function$;
 
 
 CREATE OR REPLACE FUNCTION public.schoolflow_staff_can_access_session(p_class_id uuid, p_school_id uuid)
@@ -616,7 +642,7 @@ CREATE OR REPLACE FUNCTION public.schoolflow_staff_can_access_session(p_class_id
 AS $function$ select exists(
  select 1 from public.classes c where c.id=p_class_id and c.school_id=p_school_id
  and ((public.schoolflow_my_role() = any(array['admin','head_teacher'])) or c.teacher_id=(select auth.uid()))
-); $function$
+); $function$;
 
 
 CREATE OR REPLACE FUNCTION public.schoolflow_student_in_school(p_student_id uuid, p_school_id uuid)
@@ -624,7 +650,7 @@ CREATE OR REPLACE FUNCTION public.schoolflow_student_in_school(p_student_id uuid
  LANGUAGE sql
  STABLE SECURITY DEFINER
  SET search_path TO 'public', 'pg_temp'
-AS $function$ select exists(select 1 from public.students s where s.id=p_student_id and s.school_id=p_school_id); $function$
+AS $function$ select exists(select 1 from public.students s where s.id=p_student_id and s.school_id=p_school_id); $function$;
 
 
 CREATE OR REPLACE FUNCTION public.schoolflow_submit_admission(p_class_id uuid, p_full_name text, p_admission_date date, p_date_of_birth date, p_guardian_name text, p_guardian_phone text, p_guardian_email text DEFAULT NULL::text)
@@ -655,7 +681,7 @@ begin
   values (v_student_id,v_school_id,p_date_of_birth,btrim(p_guardian_name),btrim(p_guardian_phone),nullif(lower(btrim(coalesce(p_guardian_email,''))), ''));
   return query select v_student_id, v_student_code;
 end;
-$function$
+$function$;
 
 
 -- RLS is enabled before policies are installed

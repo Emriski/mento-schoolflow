@@ -1,6 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 
-const db=createClient('https://rkwcfkkckfitcgvstekr.supabase.co','sb_publishable_eFBNcaDH6ZtRBo2lIRORug_BDmCDFyC',{auth:{storageKey:'schoolflow-parent-auth-token'}});
+// Use production only on the canonical live domains. Vercel previews and local testing use isolated staging.
+const isProductionHost=['mento-schoolflow.vercel.app','mento-schoolflow-mento-solutions.vercel.app','mento-schoolflow-git-main-mento-solutions.vercel.app'].includes(window.location.hostname);
+const db=createClient(isProductionHost?'https://rkwcfkkckfitcgvstekr.supabase.co':'https://jzrxzbejnudzkhbjyxai.supabase.co',isProductionHost?'sb_publishable_eFBNcaDH6ZtRBo2lIRORug_BDmCDFyC':'sb_publishable_nzT3M1YesKsa451fkW3Q5g_F5TPW19o',{auth:{storageKey:'schoolflow-parent-auth-token'}});
 const $=id=>document.getElementById(id);let user=null,children=[],results=[],fees=[],attendance=[],schoolId=null,activeConversation=null,chatChannel=null,chatMode='parent_teacher',chatRecipients=[],pendingChatMessageId=null;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=v=>'₦'+Number(v||0).toLocaleString('en-NG');

@@ -1,7 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
 
-const SUPABASE_URL='https://rkwcfkkckfitcgvstekr.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY='sb_publishable_eFBNcaDH6ZtRBo2lIRORug_BDmCDFyC';
+// Use production only on the canonical live domains. Vercel previews and local testing use isolated staging.
+const isProductionHost=['mento-schoolflow.vercel.app','mento-schoolflow-mento-solutions.vercel.app','mento-schoolflow-git-main-mento-solutions.vercel.app'].includes(window.location.hostname);
+const SUPABASE_URL=isProductionHost?'https://rkwcfkkckfitcgvstekr.supabase.co':'https://jzrxzbejnudzkhbjyxai.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY=isProductionHost?'sb_publishable_eFBNcaDH6ZtRBo2lIRORug_BDmCDFyC':'sb_publishable_nzT3M1YesKsa451fkW3Q5g_F5TPW19o';
 const db=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const $=id=>document.getElementById(id);
 let user=null,profile=null,classes=[],students=[],staff=[],guardians=[],marks={},reportRows=[];

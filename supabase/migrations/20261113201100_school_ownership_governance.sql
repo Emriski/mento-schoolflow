@@ -69,7 +69,7 @@ where not exists (
 )
 on conflict do nothing;
 
-create or replace function public.schoolflow_is_finance_owner(p_school_id uuid)
+create or replace function private.schoolflow_is_finance_owner(p_school_id uuid)
 returns boolean
 language sql stable security definer
 set search_path = public, pg_temp
@@ -110,7 +110,7 @@ begin
   -- Serialize transfers for this school and confirm the caller owns it now.
   perform 1 from public.schools where id=p_school_id for update;
   if not found then raise exception 'School not found'; end if;
-  if not public.schoolflow_is_finance_owner(p_school_id) then
+  if not private.schoolflow_is_finance_owner(p_school_id) then
     raise exception 'Only the current school owner can transfer ownership';
   end if;
 
@@ -157,7 +157,7 @@ $$;
 alter table public.school_ownership_history enable row level security;
 create policy school_ownership_history_owner_read
   on public.school_ownership_history for select to authenticated
-  using (public.schoolflow_is_finance_owner(school_id));
+  using (private.schoolflow_is_finance_owner(school_id));
 
 revoke all on public.school_ownership_history from anon, authenticated;
 grant select on public.school_ownership_history to authenticated;

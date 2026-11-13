@@ -95,6 +95,7 @@ as $$
 declare
   v_new_owner_history_id uuid;
   v_old_owner_id uuid;
+  v_new_owner_id uuid;
 begin
   if auth.uid() is null then
     raise exception 'Authentication required';

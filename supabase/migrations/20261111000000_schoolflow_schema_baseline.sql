@@ -132,7 +132,7 @@ CREATE TABLE public.school_fee_records (
   recorded_by uuid NOT NULL,
   created_at timestamp with time zone DEFAULT now() NOT NULL,
   updated_at timestamp with time zone DEFAULT now() NOT NULL,
-  payment_status GENERATED ALWAYS AS (
+  payment_status text GENERATED ALWAYS AS (
 CASE
     WHEN (amount_paid = (0)::numeric) THEN 'unpaid'::text
     WHEN (amount_paid < amount_due) THEN 'part_payment'::text
@@ -160,10 +160,10 @@ CREATE TABLE public.student_results (
   ca_max numeric(6,2) DEFAULT 20 NOT NULL,
   exam_score numeric(6,2) DEFAULT 0 NOT NULL,
   exam_max numeric(6,2) DEFAULT 80 NOT NULL,
-  total_score GENERATED ALWAYS AS ((ca_score + exam_score)) STORED,
-  total_max GENERATED ALWAYS AS ((ca_max + exam_max)) STORED,
-  percentage GENERATED ALWAYS AS (round((((ca_score + exam_score) / NULLIF((ca_max + exam_max), (0)::numeric)) * (100)::numeric), 2)) STORED,
-  grade GENERATED ALWAYS AS (
+  total_score numeric(7,2) GENERATED ALWAYS AS ((ca_score + exam_score)) STORED,
+  total_max numeric(7,2) GENERATED ALWAYS AS ((ca_max + exam_max)) STORED,
+  percentage numeric(6,2) GENERATED ALWAYS AS (round((((ca_score + exam_score) / NULLIF((ca_max + exam_max), (0)::numeric)) * (100)::numeric), 2)) STORED,
+  grade text GENERATED ALWAYS AS (
 CASE
     WHEN ((((ca_score + exam_score) / NULLIF((ca_max + exam_max), (0)::numeric)) * (100)::numeric) >= (70)::numeric) THEN 'A'::text
     WHEN ((((ca_score + exam_score) / NULLIF((ca_max + exam_max), (0)::numeric)) * (100)::numeric) >= (60)::numeric) THEN 'B'::text

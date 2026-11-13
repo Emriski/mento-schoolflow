@@ -41,7 +41,7 @@ begin
 
   if not found then raise exception 'Fee record not found'; end if;
   if v_school_id <> public.schoolflow_my_school_id()
-     or not public.schoolflow_has_finance_permission(v_school_id, 'finance.fees.record') then
+     or not private.schoolflow_has_finance_permission(v_school_id, 'finance.fees.record') then
     raise exception 'Not authorized to record this fee payment';
   end if;
   if coalesce(v_paid,0) + p_amount > v_due then
@@ -86,7 +86,7 @@ begin
   select * into v_payment from public.school_fee_payments where id=p_payment_id;
   if not found then raise exception 'Payment not found'; end if;
   if v_payment.school_id <> public.schoolflow_my_school_id()
-     or not public.schoolflow_has_finance_permission(v_payment.school_id,'finance.fees.record') then
+     or not private.schoolflow_has_finance_permission(v_payment.school_id,'finance.fees.record') then
     raise exception 'Not authorized to reverse this payment';
   end if;
 
@@ -137,7 +137,7 @@ begin
     end if;
     v_next := 'submitted';
   elsif p_action in ('approve','reject') then
-    if not public.schoolflow_has_finance_permission(v_expense.school_id,'finance.expenses.approve') then
+    if not private.schoolflow_has_finance_permission(v_expense.school_id,'finance.expenses.approve') then
       raise exception 'Not authorized to approve expenses';
     end if;
     if v_expense.status <> 'submitted' then raise exception 'Only submitted expenses can be reviewed'; end if;
@@ -146,13 +146,13 @@ begin
       v_next := 'rejected';
     end if;
   elsif p_action='mark_paid' then
-    if not public.schoolflow_has_finance_permission(v_expense.school_id,'finance.expenses.approve') then
+    if not private.schoolflow_has_finance_permission(v_expense.school_id,'finance.expenses.approve') then
       raise exception 'Not authorized to mark expenses paid';
     end if;
     if v_expense.status <> 'approved' then raise exception 'Only approved expenses can be marked paid'; end if;
     v_next := 'paid';
   elsif p_action='void' then
-    if not public.schoolflow_has_finance_permission(v_expense.school_id,'finance.expenses.approve') then
+    if not private.schoolflow_has_finance_permission(v_expense.school_id,'finance.expenses.approve') then
       raise exception 'Not authorized to void expenses';
     end if;
     if v_expense.status not in ('draft','submitted','approved','rejected') then
@@ -194,7 +194,7 @@ begin
   select * into v_permission from public.school_finance_permissions
   where id=p_permission_id for update;
   if not found then raise exception 'Permission not found'; end if;
-  if not public.schoolflow_is_finance_owner(v_permission.school_id) then
+  if not private.schoolflow_is_finance_owner(v_permission.school_id) then
     raise exception 'Only the school owner can revoke finance access';
   end if;
   if v_permission.revoked_at is not null then raise exception 'Permission already revoked'; end if;
@@ -240,7 +240,7 @@ begin
     where id=p_salary_record_id for update;
   if not found then raise exception 'Salary record not found'; end if;
   if v_salary.school_id <> public.schoolflow_my_school_id()
-     or not public.schoolflow_has_finance_permission(v_salary.school_id,'finance.payroll.payments.record') then
+     or not private.schoolflow_has_finance_permission(v_salary.school_id,'finance.payroll.payments.record') then
     raise exception 'Not authorized to record salary payments';
   end if;
   if v_salary.status='void' then raise exception 'Cannot pay a void salary record'; end if;
@@ -288,7 +288,7 @@ begin
   select * into v_payment from public.school_salary_payments where id=p_payment_id;
   if not found then raise exception 'Salary payment not found'; end if;
   if v_payment.school_id <> public.schoolflow_my_school_id()
-     or not public.schoolflow_has_finance_permission(v_payment.school_id,'finance.payroll.payments.approve') then
+     or not private.schoolflow_has_finance_permission(v_payment.school_id,'finance.payroll.payments.approve') then
     raise exception 'Not authorized to reverse salary payments';
   end if;
   select * into v_salary from public.school_salary_records
@@ -327,7 +327,7 @@ begin
   select * into v_income from public.school_income_records where id=p_income_id for update;
   if not found then raise exception 'Income record not found'; end if;
   if v_income.school_id <> public.schoolflow_my_school_id()
-     or not public.schoolflow_has_finance_permission(v_income.school_id,'finance.income.record') then
+     or not private.schoolflow_has_finance_permission(v_income.school_id,'finance.income.record') then
     raise exception 'Not authorized to void this income record';
   end if;
   if v_income.status <> 'posted' then raise exception 'Only posted income can be voided'; end if;

@@ -239,81 +239,60 @@ CREATE TABLE public.school_messages (
 
 CREATE INDEX attendance_records_marked_by_idx ON public.attendance_records USING btree (marked_by);
 
-CREATE UNIQUE INDEX attendance_records_pkey ON public.attendance_records USING btree (id);
 
-CREATE UNIQUE INDEX attendance_records_session_id_student_id_key ON public.attendance_records USING btree (session_id, student_id);
 
 CREATE INDEX attendance_records_session_idx ON public.attendance_records USING btree (session_id);
 
 CREATE INDEX attendance_records_student_id_idx ON public.attendance_records USING btree (student_id);
 
-CREATE UNIQUE INDEX attendance_sessions_class_id_attendance_date_key ON public.attendance_sessions USING btree (class_id, attendance_date);
 
 CREATE INDEX attendance_sessions_marked_by_idx ON public.attendance_sessions USING btree (marked_by);
 
-CREATE UNIQUE INDEX attendance_sessions_pkey ON public.attendance_sessions USING btree (id);
 
 CREATE INDEX attendance_sessions_school_date_idx ON public.attendance_sessions USING btree (school_id, attendance_date DESC);
 
 CREATE UNIQUE INDEX classes_one_assigned_class_per_teacher ON public.classes USING btree (school_id, teacher_id) WHERE (teacher_id IS NOT NULL);
 
-CREATE UNIQUE INDEX classes_pkey ON public.classes USING btree (id);
 
-CREATE UNIQUE INDEX classes_school_id_name_key ON public.classes USING btree (school_id, name);
 
 CREATE INDEX classes_school_idx ON public.classes USING btree (school_id);
 
 CREATE INDEX classes_teacher_id_idx ON public.classes USING btree (teacher_id);
 
-CREATE UNIQUE INDEX profiles_pkey ON public.profiles USING btree (id);
 
 CREATE INDEX profiles_school_role_idx ON public.profiles USING btree (school_id, role);
 
-CREATE UNIQUE INDEX school_conversation_participants_pkey ON public.school_conversation_participants USING btree (conversation_id, user_id);
 
 CREATE INDEX school_participants_user_idx ON public.school_conversation_participants USING btree (user_id, conversation_id);
 
-CREATE UNIQUE INDEX school_conversations_pkey ON public.school_conversations USING btree (id);
 
 CREATE INDEX school_conversations_school_updated_idx ON public.school_conversations USING btree (school_id, updated_at DESC);
 
-CREATE UNIQUE INDEX school_fee_records_pkey ON public.school_fee_records USING btree (id);
 
 CREATE INDEX school_fee_records_school_term_idx ON public.school_fee_records USING btree (school_id, academic_year, term, payment_status);
 
-CREATE UNIQUE INDEX school_fee_records_student_id_academic_year_term_key ON public.school_fee_records USING btree (student_id, academic_year, term);
 
 CREATE INDEX school_invites_accepted_by_idx ON public.school_invites USING btree (accepted_by);
 
 CREATE INDEX school_invites_created_by_idx ON public.school_invites USING btree (created_by);
 
-CREATE UNIQUE INDEX school_invites_pkey ON public.school_invites USING btree (id);
 
-CREATE UNIQUE INDEX school_invites_school_id_email_key ON public.school_invites USING btree (school_id, email);
 
 CREATE INDEX school_messages_conversation_created_idx ON public.school_messages USING btree (conversation_id, created_at DESC);
 
-CREATE UNIQUE INDEX school_messages_pkey ON public.school_messages USING btree (id);
 
-CREATE UNIQUE INDEX school_messages_sender_id_client_message_id_key ON public.school_messages USING btree (sender_id, client_message_id);
 
 CREATE INDEX schools_created_by_idx ON public.schools USING btree (created_by);
 
-CREATE UNIQUE INDEX schools_pkey ON public.schools USING btree (id);
 
 CREATE INDEX student_guardians_guardian_user_id_idx ON public.student_guardians USING btree (guardian_user_id);
 
-CREATE UNIQUE INDEX student_guardians_pkey ON public.student_guardians USING btree (student_id);
 
-CREATE UNIQUE INDEX student_results_pkey ON public.student_results USING btree (id);
 
-CREATE UNIQUE INDEX student_results_unique_subject_term ON public.student_results USING btree (student_id, academic_year, term, subject);
 
-CREATE UNIQUE INDEX students_class_id_student_code_key ON public.students USING btree (class_id, student_code);
 
 CREATE INDEX students_class_idx ON public.students USING btree (class_id);
 
-CREATE UNIQUE INDEX students_pkey ON public.students USING btree (id);
 
 CREATE INDEX students_school_admission_status_date_idx ON public.students USING btree (school_id, admission_status, admission_date DESC);
 

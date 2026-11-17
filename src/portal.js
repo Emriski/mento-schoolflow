@@ -277,9 +277,18 @@ $('classesList').addEventListener('click',async e=>{
  const select=[...$('classesList').querySelectorAll('select[data-class-teacher]')].find(x=>x.dataset.classTeacher===classId);
  if(!select)return;
  if(!['admin','head_teacher'].includes(profile?.role)){msg('Only school leadership can assign class teachers.','error');return}
+ const targetClass=classes.find(c=>c.id===classId);
+ if(!targetClass)return;
+ const currentTeacher=staff.find(p=>p.id===targetClass.teacher_id);
+ const nextTeacher=staff.find(p=>p.id===select.value);
+ const currentName=currentTeacher?.full_name||'Unassigned';
+ const nextName=nextTeacher?.full_name||'Unassigned';
+ if((targetClass.teacher_id||'')===(select.value||'')){msg('No change to confirm.','info');return}
+ const action=targetClass.teacher_id?'change the teacher for':'assign a teacher to';
+ if(!confirm('Confirm teacher assignment?\n\nClass: '+targetClass.name+'\nCurrent teacher: '+currentName+'\nNew teacher: '+nextName+'\n\nDo you want to '+action+' this class?')){select.value=targetClass.teacher_id||'';return}
  b.disabled=true;
  try{
-  const {error}=await db.from('classes').update({teacher_id:select.value||null}).eq('id',classId);
+  const {error}=await db.from('classes').update({teacher_id:select.value||null}).eq('id',classId).eq('school_id',profile.school_id);
   if(error)throw error;
   await loadClasses();renderClasses();msg('Teacher assignment saved.','success');
  }catch(err){msg(err.message||'Could not save the teacher assignment.','error')}
